@@ -3,7 +3,7 @@
  * glyph distinctions that the canonical text does not carry:
  * - the memory variables x, y, z use the MathPrint variable glyphs (`15→ẋ`, `y=ẋ(36-ẋ)`; GS_mem02,
  *   MT_functable01), while stat names (Sx, minX, x′) use plain letters (MF_stats1var05);
- * - ÷ is drawn ÷ (`Ans÷4`, GS_mem09), although SYMS.div reads "/";
+ * - ÷ is drawn ÷ (`Ans÷4`, GS_mem09), matching SYMS.div;
  * - the constant e has its own glyph (MF_log04), distinct from the letter e.
  */
 import { SYMS, type Node, type Row, type SymId } from "../engine/expr";
