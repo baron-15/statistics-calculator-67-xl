@@ -816,6 +816,9 @@ describe("TG p.90–95: probability", () => {
     const [a, b] = s.history.map((h) => h.value.re);
     expect(a).not.toBe(b);
     for (const v of [a, b]) expect(v).toBeGreaterThan(0), expect(v).toBeLessThan(1);
+    // the printed pair is consecutive for the generator: it back-solves to seed 665000 (M §4.5)
+    const seeded = run("665000 STO PRB RIGHT ENTER ENTER PRB RIGHT ENTER ENTER ENTER");
+    expect(lines(seeded).slice(1)).toEqual(["rand = 0.390926039", "rand = 0.514541293"]);
   });
 
   it("TG-30: 1→rand; rand → 0.000018633, then 0.745579721", () => {
