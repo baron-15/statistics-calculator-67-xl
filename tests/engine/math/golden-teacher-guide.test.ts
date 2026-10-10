@@ -3,7 +3,11 @@
  * the TI Knowledge Base examples (M §10.3). Same conventions as golden-guidebook.test.ts.
  */
 import { describe, expect, it } from "vitest";
-import { formatNumberText, oneVarStats, randNext, twoVarStats, type StatResults } from "../../../src/engine/math";
+import { rowText } from "../../../src/engine/expr";
+import {
+  evalFunctionAt, evaluateListFormula, formatNumberText, formatResult, oneVarStats, randNext, twoVarStats,
+  type EvalContext, type StatResults,
+} from "../../../src/engine/math";
 import { Calc, CL, DEFAULT_MODES, res } from "./helpers";
 
 const menu = (r: StatResults, keys: string[]) =>
@@ -189,6 +193,30 @@ describe("Probability (TG p.90–95)", () => {
 
   it("the generator is x ← 40014·x mod 2147483563", () => {
     expect(randNext(5)).toEqual({ value: 200070 / 2147483563, seed: 200070 });
+  });
+});
+
+describe("List formula and function table (TG p.80–81, p.98–100)", () => {
+  const ctx = (lists: EvalContext["lists"] = [[], [], []]): EvalContext => ({
+    modes: DEFAULT_MODES, ans: { re: 0 }, vars: new Calc().vars, lists, statVars: {}, random: () => 0.5,
+  });
+  const table = (seq: string, xs: number[]) => {
+    const f = new Calc().type(seq);
+    return xs.map((x) => rowText(formatResult(evalFunctionAt(f, x, ctx()), DEFAULT_MODES)));
+  };
+
+  it("TG-22 p.80–81: L2=9/5×L1+32 → 46.4 30.2 39.2, then 69.8 for 21", () => {
+    const f = new Calc().type("9 ÷ 5 × L1 + 32");
+    expect(evaluateListFormula(f, ctx([[8, -1, 4, 21], [], []]), 1).map((v) => v.re)).toEqual([46.4, 30.2, 39.2, 69.8]);
+  });
+
+  it("TG-32 p.98–99: y=x(36−x): Step 4 rows 12 16 20 → 288 320 320; Start 15 Step 1 rows 17 18 19 → 323 324 323", () => {
+    expect(table("var ( 36 − var )", [12, 16, 20])).toEqual(["288", "320", "320"]);
+    expect(table("var ( 36 − var )", [17, 18, 19])).toEqual(["323", "324", "323"]);
+  });
+
+  it("TG-33 p.100: y=3600−450x, Ask-x 6 7 8 → 900 450 0", () => {
+    expect(table("3600 − 450 var", [6, 7, 8])).toEqual(["900", "450", "0"]);
   });
 });
 
