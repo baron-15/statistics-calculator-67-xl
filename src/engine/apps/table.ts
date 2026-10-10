@@ -24,7 +24,8 @@ import type { CalcState } from "../state";
 import { containsSym, evalContext, evalRow } from "./calc";
 import { bigText, cursorBox, fill, invert, math, menuText, rowAscent } from "./canvas";
 import { authorCursor } from "./data";
-import { decimalRow, formatPlain, linearText, rationalRow } from "./format";
+import { classicRowText } from "../../display/symbols";
+import { decimalRow, formatPlain, glyphCount, linearText, rationalRow } from "./format";
 import { tryCalc } from "./home";
 import { editContext, homeApp, openApp, showError } from "./nav";
 import type { AppState, TableData } from "./types";
@@ -126,14 +127,15 @@ export function tableSetupKey(s: CalcState, a: Action, hyp: boolean): CalcState 
 
 export function tableSetupView(s: CalcState): CanvasScreen {
   const app = s.app as SetupApp;
-  const startText = "Start=" + linearText(app.start.row);
-  const stepText = "Step=" + linearText(app.step.row);
+  // big-font lines read like a Classic Home entry (`*` for ×)
+  const startText = "Start=" + classicRowText(app.start.row);
+  const stepText = "Step=" + classicRowText(app.step.row);
   const items: DrawItem[] = [bigText(0, 0, startText), bigText(0, 8, stepText), bigText(0, 16, "Auto"), bigText(36, 16, "Ask-ẋ"), bigText(84, 24, "OK")];
   items.push(app.ask ? invert(36, 16, 30, 8) : invert(0, 16, 24, 8));
   let cursor: CanvasScreen["cursor"];
   if (app.field === 0 || app.field === 1) {
     const ed = app.field === 0 ? app.start : app.step;
-    const cell = (app.field === 0 ? 6 : 5) + linearText(ed.row.slice(0, ed.cursor.index)).length;
+    const cell = (app.field === 0 ? 6 : 5) + glyphCount(classicRowText(ed.row.slice(0, ed.cursor.index)));
     cursor = { x: cell * 6 + 1, y: app.field * 8, w: 5, h: 7, style: cursorStyle(ed) };
   } else if (app.field === 2) {
     cursor = app.choice === 1 ? { x: 36, y: 16, w: 30, h: 8, style: "block" } : { x: 0, y: 16, w: 24, h: 8, style: "block" };

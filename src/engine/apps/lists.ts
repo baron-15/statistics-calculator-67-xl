@@ -9,7 +9,7 @@
  * are recalculated, but GB-078b's screen (MF_stats2var03) still lists 3:StatVars after the lists were
  * cleared and re-entered, and the captures are the display truth (SPEC decision 1).
  */
-import type { Row, SymId } from "../expr";
+import type { Row } from "../expr";
 import { evaluateListFormula, type Value } from "../math";
 import type { CalcState } from "../state";
 import { evalContext } from "./calc";
@@ -18,25 +18,6 @@ export const MAX_LIST = 42;
 
 export type Lists = [Value[], Value[], Value[]];
 export type Formulas = [Row | null, Row | null, Row | null];
-
-const LIST_SYMS: SymId[] = ["L1", "L2", "L3"];
-
-/** Which lists a formula names. */
-export function listRefs(formula: Row): number[] {
-  const refs = new Set<number>();
-  const walk = (r: Row) => {
-    for (const n of r) {
-      if (n.t === "sym") {
-        const i = LIST_SYMS.indexOf(n.s);
-        if (i >= 0) refs.add(i);
-      } else {
-        for (const v of Object.values(n)) if (Array.isArray(v)) walk(v as Row);
-      }
-    }
-  };
-  walk(formula);
-  return [...refs].sort();
-}
 
 /** The values of formula list `col`. Throws CalcError (FORMULA, DIM MISMATCH, or an evaluation error). */
 export function formulaValues(s: CalcState, lists: Lists, col: number, formula: Row): Value[] {
@@ -69,8 +50,6 @@ export function withLists(s: CalcState, lists: Lists, formulas: Formulas = s.app
   const next = recompute(s, lists, formulas);
   return { ...s, apps: { ...s.apps, lists: next, formulas } };
 }
-
-export const replaceAt = <T,>(xs: readonly T[], i: number, v: T): T[] => xs.map((x, k) => (k === i ? v : x));
 
 export function setList(lists: Lists, col: number, values: Value[]): Lists {
   return lists.map((l, i) => (i === col ? values : l)) as Lists;
