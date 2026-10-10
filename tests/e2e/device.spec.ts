@@ -12,9 +12,9 @@ test.beforeEach(async ({ page }) => {
   await expect(page.getByTestId("device")).toBeVisible();
 });
 
-test("has the B-30XS title and wordmark", async ({ page }) => {
-  await expect(page).toHaveTitle("B-30XS MultiView Online");
-  await expect(page.getByTestId("wordmark")).toHaveText("B-30XS");
+test("has the B-67XL title and wordmark", async ({ page }) => {
+  await expect(page).toHaveTitle("B-67XL AmazingView Online");
+  await expect(page.getByTestId("wordmark")).toHaveText("B-67XL");
   await expect(page.getByText("Texas Instruments", { exact: false }).first()).toBeVisible(); // the disclaimer only
   await expect(page.getByTestId("device").getByText("Texas Instruments")).toHaveCount(0);
 });

@@ -1,4 +1,4 @@
-# B-30XS MultiView Online
+# B-67XL AmazingView Online
 
 A faithful web recreation of the TI-30XS MultiView scientific calculator. It reproduces the 4-line MathPrint dot-matrix display, the keystroke behavior, the menus, statistics and the function table.
 

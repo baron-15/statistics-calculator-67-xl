@@ -131,12 +131,18 @@ export const SOLAR_DIVIDERS = [271, 327.5, 383.5, 440, 496.5, 552.5] as const;
  * (y 288–315), letter-spaced over x 885–1108. Colour #d5d7d7.
  */
 export const WORDMARK_PREFIX = "B-";
-export const WORDMARK_MODEL = "30XS";
-export const WORDMARK_LINE2 = "MultiView";
+export const WORDMARK_MODEL = "67XL";
+export const WORDMARK_LINE2 = "AmazingView";
+/**
+ * Line 2 keeps the original's letter-spacing rather than its span: "MultiView" spread over 223 units
+ * (x 297–520) is 155.3 units of glyphs plus 8.47 units between letters. "AmazingView" (214.7 units of
+ * glyphs, measured in the same font and size) plus 10 × 8.47 spans 299.4 units, centred on the original
+ * line's centre (408.5). If WORDMARK_LINE2 changes, re-measure its glyph width and recompute x0/x1.
+ */
 export const WORDMARK = {
   cx: 407,
   line1: { baseline: 185.5, cap: 44, gap: 1 },
-  line2: { baseline: 224, cap: 26, x0: 297, x1: 520 },
+  line2: { baseline: 224, cap: 26, x0: 258.8, x1: 558.2 },
   color: "#d5d7d7",
 } as const;
 /**

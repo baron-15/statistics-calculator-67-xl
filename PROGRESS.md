@@ -15,7 +15,7 @@ Status as of 2026-10-10 (branch `build/ti30xs-emulator`):
   - the long-entry scroll window;
   - ◂▸ with no history;
   - the overflow arrow on long history entries.
-- To confirm with the user: the wordmark "B-30XS MultiView", and the real-unit yellow-green LCD glass (vs the render's grey).
+- To confirm with the user: the wordmark "B-67XL AmazingView" (user-chosen), and the real-unit yellow-green LCD glass (vs the render's grey).
 
 ## If paused
 Resume by reading this file and the research files, then continue from "Next".
