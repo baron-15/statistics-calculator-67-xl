@@ -400,6 +400,8 @@ export const LEGEND = {
   digitDrop: 4.5,
   /** function-key legends sit higher than the key centre by this much (negative: lower) */
   wordLift: -1,
+  /** digits on the outer-rounded keys (7 4 1 0, 9 6 3 (−)) sit this far towards the block's centre */
+  digitInset: 3,
 } as const;
 
 /**

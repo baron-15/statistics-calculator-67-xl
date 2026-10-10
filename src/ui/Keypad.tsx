@@ -88,8 +88,8 @@ function legend(spec: KeySpec, box: KeyBox): ReactNode {
       return symbolSvg(
         box,
         <>
-          <path d={polygonPath([[-23, 0], [-3, -7.5], [-3, 7.5]])} />
-          <path d={polygonPath([[22, 0], [2, -7.5], [2, 7.5]])} />
+          <path d={polygonPath([[-20, 0], [-5, -7.5], [-5, 7.5]])} />
+          <path d={polygonPath([[19, 0], [4, -7.5], [4, 7.5]])} />
         </>,
         1.5,
       );
@@ -193,12 +193,23 @@ function legend(spec: KeySpec, box: KeyBox): ReactNode {
       return <span style={{ fontSize: u(28), fontWeight: 600, position: "relative", left: u(4), top: u(-2.5) }}>)</span>;
     // "(−)": ink x 509–550 (4.5 left of the key centre), parentheses 27 tall
     case "NEG":
-      return <span style={{ fontSize: u(32), fontWeight: 600, position: "relative", left: u(-4.5) }}>(−)</span>;
+      return (
+        <span className="dv-neg" style={{ fontSize: u(32), fontWeight: 600, position: "relative", left: u(-4.5) }}>
+          (<span className="dv-neg-bar" />)
+        </span>
+      );
+    // "enter" is printed lighter than the function-key words
+    case "ENTER":
+      return <span style={{ fontSize: u(27.5), fontWeight: 600 }}>enter</span>;
     // "on" is printed larger than the other words (x-height 17 against 14)
     case "ON":
       return <span style={{ fontSize: u(31), position: "relative", top: u(-2) }}>on</span>;
     default:
-      if (spec.kind === "digit") return <span style={{ fontSize: u(LEGEND.digit) }}>{spec.label}</span>;
+      if (spec.kind === "digit") {
+        // on the keys rounded on the outside, the digit sits towards the block's centre
+        const nudge = box.shape === "digitL" ? LEGEND.digitInset : box.shape === "digitR" ? -LEGEND.digitInset - 1 : 0;
+        return <span style={{ fontSize: u(LEGEND.digit), position: "relative", left: u(nudge) }}>{spec.label}</span>;
+      }
       return word(spec.label);
   }
 }
