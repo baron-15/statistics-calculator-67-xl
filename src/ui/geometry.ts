@@ -316,8 +316,12 @@ export const DPAD = {
     LEFT: [[545, 837], [562, 828], [562, 846]] as Pt[],
     RIGHT: [[692, 838], [676, 829], [676, 847]] as Pt[],
   },
-  /** hit area: the oval's box plus this margin, split into four triangles by its diagonals */
-  hitPad: 14,
+  /**
+   * Hit area: the oval's box plus these margins, split into four triangles by its diagonals. The
+   * vertical margin fills the notch (render y 830–1024) so the ▲ and ▼ zones are 88 units tall:
+   * 44 px on a 412-px-wide phone.
+   */
+  hitPad: { x: 14, y: 24 },
 } as const;
 
 /**
@@ -371,10 +375,10 @@ function computeHitBoxes(): Record<FaceKeyId, HitBox> {
 export const HIT_BOXES = computeHitBoxes();
 
 export const DPAD_HIT: HitBox = {
-  x: DPAD.cx - DPAD.rx - DPAD.hitPad,
-  y: DPAD.cy - DPAD.ry - DPAD.hitPad,
-  w: 2 * (DPAD.rx + DPAD.hitPad),
-  h: 2 * (DPAD.ry + DPAD.hitPad),
+  x: DPAD.cx - DPAD.rx - DPAD.hitPad.x,
+  y: DPAD.cy - DPAD.ry - DPAD.hitPad.y,
+  w: 2 * (DPAD.rx + DPAD.hitPad.x),
+  h: 2 * (DPAD.ry + DPAD.hitPad.y),
 };
 
 // ---------------------------------------------------------------------------------------------
