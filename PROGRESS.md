@@ -8,14 +8,13 @@ Status as of 2026-10-10 (branch `build/ti30xs-emulator`):
 - Measured colors: faceplate #466474, case sides #d5d5d5, top cap #262626, LCD #a2a7a0, 2nd key #5b8b1b, function keys #405c6a, digit keys #d0d0d0.
 
 ## In progress
-- Research: all three are done (`docs/research/`: keys-menus, display, math-stats with 158 worked examples).
-- Phase 0 contracts are committed: keys, expr, screen, state, press, script, and stubs for editor/math/apps/display.
-- Wave 1: A (editor) is MERGED (251 tests). D (renderer) is still running; its worktree is `.claude/worktrees/agent-d-display`.
-- Wave 2 (running since 19:47 UTC), each in a TI-repo worktree:
-  - B math: `../ti30xs-wt-math`, branch `agent/math`
-  - C apps: `../ti30xs-wt-apps`, branch `agent/apps`
-  - E UI: `../ti30xs-wt-ui`, branch `agent/ui`
-- Merge order once done: D, B, C, E. Then verification (guidebook golden tests and a visual comparison).
+- **Merged into `build/ti30xs-emulator`** (717 tests passing, plus 8 expected-fail minority captures):
+  - A editor;
+  - D renderer (175/183 TI captures pixel-exact);
+  - B math (every guidebook, TG and KB calculation example passes);
+  - E device skin (measured from TI's render; wordmark "B-30XS MultiView").
+- **Running:** C apps/router, in the worktree `../ti30xs-wt-apps`, branch `agent/apps`.
+- **After C:** end-to-end verification against the guidebook keystroke flows and TI's screen captures, and an LCD contrast check against the real-unit photo.
 
 ## Next
 1. Compile `docs/SPEC.md` from the research.
