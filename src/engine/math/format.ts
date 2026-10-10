@@ -297,13 +297,12 @@ export function formatNumberText(x: number | null, modes: Pick<Modes, "notation"
   const g = digitsOf(x);
   const fix = modes.decimals === "FLOAT" ? null : modes.decimals;
   if (modes.notation === "NORM" && (g.d === "" || Math.abs(x) >= 1e-9)) {
-    const room = width - sign.length - intDigits(g) - 1;
     if (g.d === "") return fixedText(g, fix ?? 0, fix !== null);
-    if (room >= 0 || intDigits(g) <= width - sign.length) {
-      const natural = Math.max(0, g.d.length - (g.e + 1));
-      const decs = Math.max(0, Math.min(room, fix ?? natural));
-      const r = roundDec(g, decs);
-      const text = fixedText(r, decs, fix !== null || (natural > room && decs > 0));
+    const natural = Math.max(0, g.d.length - (g.e + 1));
+    const room = Math.max(0, width - sign.length - intDigits(g) - 1);
+    // fewest cuts first; a rounding carry (9.99… → 10.00…) may need one decimal fewer
+    for (let decs = Math.min(fix ?? natural, room); decs >= 0; decs--) {
+      const text = fixedText(roundDec(g, decs), decs, fix !== null || decs < natural);
       if (sign.length + text.length <= width) return sign + text;
     }
   }

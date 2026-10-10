@@ -182,3 +182,11 @@ describe("formatNumberText: StatVars, Recall Var, data editor (M §2.2 rules 5 a
     expect(t(6.283185307, {}, 7)).toBe("6.28319");
   });
 });
+
+describe("formatNumberText edge cases", () => {
+  it("a rounding carry keeps positional form with one decimal fewer", () => {
+    expect(formatNumberText(9.99999999999, DEFAULT_MODES)).toBe("10.00000000");
+    expect(formatNumberText(12345678901, DEFAULT_MODES)).toBe("12345678901");
+    expect(formatNumberText(123456789012, DEFAULT_MODES)).toBe("1.234568ᴇ11"); // 11 characters in all
+  });
+});
