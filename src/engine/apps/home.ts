@@ -16,6 +16,7 @@
  *   position).
  * - 2nd quit on Home also blanks the screen (K §4.7).
  */
+import { homeLayout } from "../../display/home";
 import { cellCount, clearAction, cursorStyle, editKey, emptyEditor, isEmpty, pasteRow } from "../editor";
 import { isCalcError, type ErrorKind } from "../errors";
 import { sym, type Row } from "../expr";
@@ -205,13 +206,23 @@ export function homeView(s: CalcState): Screen {
   };
 }
 
-/** ↑ when history exists above (also on a blank screen, K §5); ↓ while browsing (the entry is below). */
+/**
+ * ↑ once any history exists (K §5: also on a blank screen after off/on, and on single-line screens
+ * such as GS_AnsTog01), except on the oldest entry with nothing scrolled off above; ↓ while browsing
+ * (the entry line is below the highlight) or when the renderer has a line below the screen.
+ * SPEC: assumption: the captures light ↓ inconsistently after enter (GS_mem05/07 do, GS_mem03 and
+ * GS_scroll04 do not), so ↓ is not lit after enter.
+ */
 export function homeArrows(s: CalcState): { up: boolean; down: boolean } {
   const app = s.app as HomeApp;
+  const screen = homeView(s);
+  if (screen.kind !== "home") return { up: false, down: false };
   const sel = app.selected;
+  const layout = homeLayout(screen);
+  const atOldest = !!sel && sel.line === 0 && sel.part === "entry";
   return {
-    up: s.history.length > 0 && !(sel && sel.line === 0 && sel.part === "entry"),
-    down: !!sel,
+    up: s.history.length > 0 && (!atOldest || layout.hiddenAbove),
+    down: !!sel || layout.hiddenBelow,
   };
 }
 

@@ -3,7 +3,7 @@ import { menuText } from "../../../src/engine/apps";
 import { pressOnClear } from "../../../src/engine/press";
 import type { CalcState } from "../../../src/engine";
 import type { Value } from "../../../src/engine/math";
-import { canvas, entryText, gbHistory, indicators, initialState, inverts, run, sym, textAt } from "./helpers";
+import { entryText, gbHistory, indicators, initialState, inverts, run, sym, textAt } from "./helpers";
 
 const int = (n: number): Value => ({ re: n, exact: { n: BigInt(n), d: 1n, root: 1n, pi: false } });
 const menu = (s: CalcState) => menuText(s);
@@ -86,19 +86,14 @@ describe("2nd angle menu (K §3.3; MF_StAngle02)", () => {
 describe("2nd recall (K §3.7; GS_mem04)", () => {
   const withX = (from: CalcState = initialState()) => ({ ...from, vars: { ...from.vars, x: int(15) } });
 
-  it("lists x … c with values; variable names use the variable glyph (math items)", () => {
+  it("lists x … c with values, using the variable glyphs ẋ ẏ ż", () => {
     const s = run("RECALL", withX());
-    expect(textAt(s)).toEqual(["0,0:Recall Var", "0,8:1:", "18,8:=15", "0,16:2:", "18,16:=0", "0,24:3↓", "18,24:=0"]);
-    expect(canvas(s).items.filter((i) => i.t === "math")).toEqual([
-      { t: "math", x: 12, y: 8, row: [sym("x")] },
-      { t: "math", x: 12, y: 16, row: [sym("y")] },
-      { t: "math", x: 12, y: 24, row: [sym("z")] },
-    ]);
+    expect(textAt(s)).toEqual(["0,0:Recall Var", "0,8:1:ẋ=15", "0,16:2:ẏ=0", "0,24:3↓ż=0"]);
     expect(inverts(s)).toEqual([
       { x: 0, y: 0, w: 61, h: 8 },
       { x: 0, y: 8, w: 12, h: 8 },
     ]);
-    expect(menu(run("RECALL", withX()))?.items).toEqual(["x=15", "y=0", "z=0", "t=0", "a=0", "b=0", "c=0"]);
+    expect(menu(run("RECALL", withX()))?.items).toEqual(["ẋ=15", "ẏ=0", "ż=0", "t=0", "a=0", "b=0", "c=0"]);
   });
 
   it("selecting pastes the value, not the name (GB-029b, GB-032d)", () => {
@@ -110,7 +105,7 @@ describe("2nd recall (K §3.7; GS_mem04)", () => {
 
   it("shows E-format values in ENG (GB-032c)", () => {
     const eng: CalcState = { ...initialState(), modes: { ...initialState().modes, notation: "ENG" }, vars: { ...initialState().vars, x: int(196000), y: { re: 207400 } } };
-    expect(menu(run("RECALL", eng))?.items.slice(0, 3)).toEqual(["x=196ᴇ3", "y=207.4ᴇ3", "z=0ᴇ0"]);
+    expect(menu(run("RECALL", eng))?.items.slice(0, 3)).toEqual(["ẋ=196ᴇ3", "ẏ=207.4ᴇ3", "ż=0ᴇ0"]);
   });
 });
 
@@ -215,9 +210,10 @@ describe("StatVars (K §3.5; MF_stats2var05B, MF_statspr206)", () => {
   const open = (script: string) => run(`STAT 3 ${script}`, done);
 
   it("shows name=value in an 11-character field, keeping rounding zeros (GB-080b/c)", () => {
-    expect(textAt(open(""))).toEqual(["0,0:2-Var:L1,L2", "0,8:1:n=4", "0,16:2:x̄=56.5", "0,24:3↓Sx=19.89137166"]);
-    expect(textAt(open("DOWN×13")).slice(1)).toEqual(["0,8:C↑Σxy=5234.15", "0,16:D:a=0.677325190", "0,24:E↓b=⁻18.6663732"]);
-    expect(textAt(open("DOWN×16")).slice(1)).toEqual(["0,8:F↑r=0.963411717", "0,16:G:x′", "0,24:H↓y′"]);
+    // x̄, Sx, b and r use the raised = (≡) exactly as the captures do
+    expect(textAt(open(""))).toEqual(["0,0:2-Var:L1,L2", "0,8:1:n=4", "0,16:2:x̄≡56.5", "0,24:3↓Sx≡19.89137166"]);
+    expect(textAt(open("DOWN×13")).slice(1)).toEqual(["0,8:C↑Σxy=5234.15", "0,16:D:a=0.677325190", "0,24:E↓b≡⁻18.6663732"]);
+    expect(textAt(open("DOWN×16")).slice(1)).toEqual(["0,8:F↑r≡0.963411717", "0,16:G:x′", "0,24:H↓y′"]);
   });
 
   it("▲×6 from item 1 wraps to G:x′ (GB-078c) and enter pastes x′(", () => {

@@ -6,21 +6,19 @@
  * - `valueRow`: a value as an entry Row, for pasting (recall, Ans in conversions) and substitution.
  * - `linearText`: an entry Row as one line of text in the 4×5 menu font (data-editor author line).
  */
-import { SYMS, sym, type Node, type Row, type SymId } from "../expr";
+import { textWidth } from "../../display/fonts";
+import { symText } from "../../display/symbols";
+import { sym, type Node, type Row, type SymId } from "../expr";
 import { formatResult, type Modes, type Value } from "../math";
 
 // ------------------------------------------------------------------------------------------------
 // Text measurement
 
 /**
- * Glyph cells in a canvas string: one per code point, except that the ◂▸ and ⁻¹ pairs are single
- * glyphs (D §3, §8.1) and combining marks (the bar of x̄) take no cell.
+ * Glyph cells in a canvas string, counted as the renderer draws it: one per character, except the
+ * single-glyph sequences ◂▸, ⁻¹ and n/d, and combining marks (the bar of x̄) that take no cell.
  */
-export function glyphCount(text: string): number {
-  let n = 0;
-  for (const ch of text.replace(/⁻¹|◂▸/g, "\u0001")) if (!/\p{M}/u.test(ch)) n++;
-  return n;
-}
+export const glyphCount = (text: string): number => textWidth("big", text) / 6;
 
 // ------------------------------------------------------------------------------------------------
 // Restricted-context numbers (E notation)
@@ -52,14 +50,15 @@ function positional(digits: string, exp: number): string {
  *   |x| ≥ 10¹⁰, or a value that would keep fewer than 3 significant digits, switches to E form.
  * - FIX n: n decimals (rounded to fit if needed).
  * - SCI / ENG: mantissa, `E`, exponent (ENG exponents are multiples of 3: `207.4ᴇ3`, `0ᴇ0`).
- * Exact rationals print as `n/d` when they fit (GB p.32: fractions stay `1/4` in the data editor).
+ * Exact rationals print as `n⁄d` with the slanted bar when they fit (GB p.32: fractions stay `1⁄4`
+ * in the data editor, MT_DataEd01).
  * Negative numbers use the raised `⁻` (K §4.10). `eChar` is `ᴇ` (big font) or `E` (menu font).
  */
 export function formatPlain(v: Value, modes: Modes, max: number, eChar = "ᴇ"): string {
   if (!Number.isFinite(v.re)) return "Error";
   const ex = v.exact;
   if (ex && isRational(v) && ex.d !== 1n) {
-    const s = `${ex.n < 0n ? "⁻" : ""}${ex.n < 0n ? -ex.n : ex.n}/${ex.d}`;
+    const s = `${ex.n < 0n ? "⁻" : ""}${ex.n < 0n ? -ex.n : ex.n}⁄${ex.d}`;
     if (glyphCount(s) <= max) return s;
   }
   return formatNumber(v.re, modes, max, eChar);
@@ -181,9 +180,9 @@ export function operandRow(v: Value): Row {
 // Linear text of a row (author line of the data editor, table cells)
 
 /**
- * One-line text of a Classic row, as the 4×5 data-editor font shows it: `×` for multiplication and
- * `/` for both division and the Classic fraction bar (GB-089c `♦L2=9/5×L1+32`). Templates (which a
- * Classic editor never builds) fall back to rowText-like forms.
+ * One-line text of a Classic row, as the 4×5 data-editor font shows it: `×` for multiplication, `/`
+ * for division (GB-089c `♦L2=9/5×L1+32`), `⁄` for the fraction bar, and the variable glyphs (ẋ).
+ * Templates (which a Classic editor never builds) fall back to rowText-like forms.
  */
 export function linearText(row: Row): string {
   return row
@@ -191,10 +190,10 @@ export function linearText(row: Row): string {
       switch (n.t) {
         case "sym":
           if (n.s === "mul") return "×";
-          if (n.s === "fracbar") return "/";
-          return SYMS[n.s];
-        case "frac": return `${group(n.num)}/${group(n.den)}`;
-        case "mixed": return `${linearText(n.whole)}⌴${group(n.num)}/${group(n.den)}`;
+          if (n.s === "div") return "/";
+          return symText(n.s);
+        case "frac": return `${group(n.num)}⁄${group(n.den)}`;
+        case "mixed": return `${linearText(n.whole)}⌴${group(n.num)}⁄${group(n.den)}`;
         case "pow": return `^${group(n.exp)}`;
         case "sqrt": return `√${group(n.rad)}`;
         case "root": return `${group(n.index)}ˣ√${group(n.rad)}`;

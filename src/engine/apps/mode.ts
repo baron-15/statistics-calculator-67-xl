@@ -25,16 +25,16 @@ interface Opt {
   x: number;
 }
 
-/** Options per row with their x (first glyph column). Words use a 5-px advance; FIX digits a 6-px advance from x=31. */
+/** Options per row with their text x. Words use the 5-px advance; the FIX digits a 6-px advance from x=30 (E9). */
 const ROWS: Opt[][] = [
   words(["DEG", "RAD", "GRAD"]),
   words(["NORM", "SCI", "ENG"]),
-  [{ text: "FLOAT", x: 1 }, ...Array.from({ length: 10 }, (_, i) => ({ text: String(i), x: 31 + 6 * i }))],
+  [{ text: "FLOAT", x: 0 }, ...Array.from({ length: 10 }, (_, i) => ({ text: String(i), x: 30 + 6 * i }))],
   words(["CLASSIC", "MATHPRINT"]),
 ];
 
 function words(ws: string[]): Opt[] {
-  let x = 1;
+  let x = 0;
   return ws.map((text) => {
     const o = { text, x };
     x += (text.length + 1) * MENU_ADV;

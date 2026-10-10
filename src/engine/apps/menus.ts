@@ -15,6 +15,7 @@ import type { CalcState, VarName } from "../state";
 import { VARS, ZERO } from "./calc";
 import { menuItems, scrollTop, type MenuLine } from "./canvas";
 import { startFormula } from "./data";
+import { symText } from "../../display/symbols";
 import { formatPlain, glyphCount, valueRow } from "./format";
 import { setFormula, setList, withLists, type Formulas, type Lists } from "./lists";
 import { homeApp, openMenu, pasteInto } from "./nav";
@@ -53,7 +54,7 @@ function tabsOf(s: CalcState, id: MenuId): Tab[] {
       return [{
         title: "Recall Var",
         items: VARS.map((v): Item => ({
-          line: { variable: v, label: `=${formatPlain(s.vars[v], s.modes, 11)}` },
+          line: { label: `${symText(v)}=${formatPlain(s.vars[v], s.modes, 11)}` },
           run: (st, b) => pasteInto(st, b, valueRow(st.vars[v], st.modes)),
         })),
       }];
@@ -91,7 +92,8 @@ function tabsOf(s: CalcState, id: MenuId): Tab[] {
           const prime = it.key === "stat_xprime" || it.key === "stat_yprime";
           // the value fills what is left of the 16 cells, at most an 11-character field (K §3.5)
           const room = Math.min(11, 16 - 2 - glyphCount(name) - 1);
-          const label = prime ? name : `${name}=${it.value === null ? "Error" : formatPlain({ re: it.value }, s.modes, room)}`;
+          const eq = it.value !== null && RAISED_EQ.has(it.key) ? "≡" : "=";
+          const label = prime ? name : `${name}${eq}${it.value === null ? "Error" : formatPlain({ re: it.value }, s.modes, room)}`;
           // x′ and y′ paste with an open parenthesis (GB-078d `x′(45)`)
           const row: Row = prime ? [sym(it.key), sym("lparen")] : [sym(it.key)];
           return { line: { label }, run: (stt, b) => pasteInto(stt, b, row) };
@@ -140,6 +142,14 @@ function tabsOf(s: CalcState, id: MenuId): Tab[] {
       return [{ title: "Ls", items: [pasteSym("L1"), pasteSym("L2"), pasteSym("L3")] }];
   }
 }
+
+/**
+ * The results screens draw some `=` signs one row higher (D §8.1 "=alt"): in every capture this is
+ * x̄, Sx, b and r with a value, and never n, a, Σxy, minX or `Sx=Error` (MF_stats1var05,
+ * MF_statspr205/206/207, MF_stats2var05B). Reproduced as captured; the other items, never captured,
+ * use the plain `=`.
+ */
+const RAISED_EQ: ReadonlySet<SymId> = new Set<SymId>(["stat_xbar", "stat_Sx", "stat_b", "stat_r"]);
 
 /** After a CLEAR / FORMULA action the data editor shows the top of its lists (GB-077b, GB-079a). */
 const atTop = (b: AppState): AppState => (b.kind === "data" ? { ...b, row: 0, top: 0, edit: null, formula: null } : b);
@@ -195,7 +205,7 @@ export function menuText(s: CalcState): { tabs: string[]; active: number; items:
   return {
     tabs: tabs.map((t) => t.title),
     active: app.tab,
-    items: tab?.items.map((it) => (it.line.variable ? SYMS[it.line.variable] : "") + it.line.label) ?? [],
+    items: tab?.items.map((it) => it.line.label) ?? [],
     selected: app.item,
     top: app.top,
   };

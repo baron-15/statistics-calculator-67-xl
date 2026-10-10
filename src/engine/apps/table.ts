@@ -6,9 +6,9 @@
  * 2. Setup, big font: `Start=0` / `Step=1` / `Auto` (cell 0) `Ask-x` (cell 6) / `OK` (cell 14).
  *    Typing overwrites the value from its first character; clear empties it (TG p.97). Step 0 is
  *    refused with DOMAIN (SPEC: assumption: the guidebook only says it cannot be zero).
- * 3. The table: `x` and `y` headers (menu font at x 11 and 47), a rule at column 36 (rows 0–23) and
- *    at row 24, three rows at y 6/12/18 (x values at x=1, y values at x=39), the selected x cell
- *    inverse over columns 0–34, and `x=<value>` at y=26. Auto scrolls without end in both
+ * 3. The table: `x` and `y` headers (menu-font variable glyphs at x 10 and 46), a rule at column 36
+ *    (rows 0–23) and at row 24, three rows at y 6/12/18 (x values at x=0, y values at x=38), the
+ *    selected x cell inverse over columns 0–34, and `x=<value>` at y=26 (MT_functable04). Auto scrolls without end in both
  *    directions; Ask-x rows start empty: type x and enter computes y (the row stays selected, as
  *    in MT_functable07), delete removes a row.
  * clear backs up one screen (table → setup → y= → Home).
@@ -128,7 +128,7 @@ export function tableSetupView(s: CalcState): CanvasScreen {
   const app = s.app as SetupApp;
   const startText = "Start=" + linearText(app.start.row);
   const stepText = "Step=" + linearText(app.step.row);
-  const items: DrawItem[] = [bigText(0, 0, startText), bigText(0, 8, stepText), bigText(0, 16, "Auto"), bigText(36, 16, "Ask-x"), bigText(84, 24, "OK")];
+  const items: DrawItem[] = [bigText(0, 0, startText), bigText(0, 8, stepText), bigText(0, 16, "Auto"), bigText(36, 16, "Ask-ẋ"), bigText(84, 24, "OK")];
   items.push(app.ask ? invert(36, 16, 30, 8) : invert(0, 16, 24, 8));
   let cursor: CanvasScreen["cursor"];
   if (app.field === 0 || app.field === 1) {
@@ -235,24 +235,24 @@ function commitX(s: CalcState, app: ViewApp, ed: EditorState): CalcState {
 
 export function tableView(s: CalcState): CanvasScreen {
   const app = s.app as ViewApp;
-  const items: DrawItem[] = [menuText(11, 0, "x"), menuText(47, 0, "y")];
+  const items: DrawItem[] = [menuText(10, 0, "ẋ"), menuText(46, 0, "ẏ")];
   for (let r = 0; r < 3; r++) {
     const x = rowX(s, app.first + r);
     if (!x) continue;
     const y = 6 + 6 * r;
-    items.push(menuText(1, y, formatPlain(x, s.modes, 7, "E")));
+    items.push(menuText(0, y, formatPlain(x, s.modes, 7, "E")));
     const v = tableY(s, x);
-    items.push(menuText(39, y, v ? formatPlain(v, s.modes, 11, "E") : s.apps.table.func.length ? "Error" : ""));
+    items.push(menuText(38, y, v ? formatPlain(v, s.modes, 11, "E") : s.apps.table.func.length ? "Error" : ""));
   }
   items.push(invert(0, 6 + 6 * app.sel, 35, 6));
   items.push(fill(36, 0, 1, 24), fill(0, 24, 96, 1));
   const screen: CanvasScreen = { kind: "canvas", items };
   if (app.edit) {
-    items.push(menuText(1, 26, "x=" + linearText(app.edit.row)));
-    screen.cursor = authorCursor(11, app.edit, 26);
+    items.push(menuText(0, 26, "ẋ=" + linearText(app.edit.row)));
+    screen.cursor = authorCursor(2 * 5, app.edit, 26);
   } else {
     const x = rowX(s, app.first + app.sel);
-    items.push(menuText(1, 26, "x=" + (x ? formatPlain(x, s.modes, 12, "E") : "")));
+    items.push(menuText(0, 26, "ẋ=" + (x ? formatPlain(x, s.modes, 12, "E") : "")));
   }
   return screen;
 }

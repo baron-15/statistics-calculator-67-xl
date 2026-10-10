@@ -3,7 +3,7 @@
  * captures MF_stats1var04, MF_stats2var04).
  *
  * The wizard uses the 4×5 font at a 6-row pitch: `1-VAR STATS` / `DATA: L1 L2 L3` /
- * `FRQ: ONE L1 L2 L3` / `CALC` right-aligned at x=71 on the bottom line; each row's chosen option
+ * `FRQ: ONE L1 L2 L3` / `CALC` at x=70 on the bottom line (`ẋDATA:` / `ẏDATA:` for 2-Var); each row's chosen option
  * is inverse and the cursor box blinks on the option under the cursor.
  * ▲ ▼ change rows (landing on that row's chosen option), ◄ ► move along a row, enter chooses the
  * option and moves down (GB-079b/c: `▼ ► ► enter` then `enter` calculates), enter on CALC
@@ -19,6 +19,7 @@ import { oneVarStats, twoVarStats } from "../math";
 import type { CanvasScreen, DrawItem } from "../screen";
 import type { CalcState } from "../state";
 import { choiceBox, invert, menuText, MENU_ADV } from "./canvas";
+import { glyphCount } from "./format";
 import { tryCalc } from "./home";
 import { homeApp, openApp, openMenu, showError } from "./nav";
 import type { AppState, StatRecord } from "./types";
@@ -34,7 +35,7 @@ interface WizRow {
 function rows(vars: 1 | 2): WizRow[] {
   return vars === 1
     ? [{ label: "DATA: ", options: ["L1", "L2", "L3"] }, { label: "FRQ: ", options: ["ONE", "L1", "L2", "L3"] }]
-    : [{ label: "xDATA: ", options: ["L1", "L2", "L3"] }, { label: "yDATA: ", options: ["L1", "L2", "L3"] }];
+    : [{ label: "ẋDATA: ", options: ["L1", "L2", "L3"] }, { label: "ẏDATA: ", options: ["L1", "L2", "L3"] }];
 }
 
 /** The chosen column of wizard row 0 or 1. */
@@ -100,9 +101,9 @@ function calculate(s: CalcState, app: WizardApp): CalcState {
   return openMenu(next, "statVars", homeApp());
 }
 
-/** x of each option in a wizard row: the row text is one string in the 5-px advance from x=1. */
+/** x of each option in a wizard row: the row text is one string in the 5-px advance from x=0. */
 function optionXs(row: WizRow): number[] {
-  let x = 1 + row.label.length * MENU_ADV;
+  let x = glyphCount(row.label) * MENU_ADV;
   return row.options.map((o) => {
     const at = x;
     x += (o.length + 1) * MENU_ADV;
@@ -110,19 +111,19 @@ function optionXs(row: WizRow): number[] {
   });
 }
 
-const CALC_X = 71;
+const CALC_X = 70;
 const CALC_Y = 24;
 
 export function wizardView(s: CalcState): CanvasScreen {
   const app = s.app as WizardApp;
-  const items: DrawItem[] = [menuText(1, 0, app.vars === 1 ? "1-VAR STATS" : "2-VAR STATS")];
+  const items: DrawItem[] = [menuText(0, 0, app.vars === 1 ? "1-VAR STATS" : "2-VAR STATS")];
   const boxes: DrawItem[] = [];
   rows(app.vars).forEach((r, i) => {
     const y = 6 * (i + 1);
-    items.push(menuText(1, y, r.label + r.options.join(" ")));
+    items.push(menuText(0, y, r.label + r.options.join(" ")));
     const xs = optionXs(r);
     const c = chosen(s, app.vars, i);
-    const b = choiceBox(xs[c] ?? 1, y, r.options[c]?.length ?? 1);
+    const b = choiceBox(xs[c] ?? 0, y, r.options[c]?.length ?? 1);
     boxes.push(invert(b.x, b.y, b.w, b.h));
   });
   items.push(menuText(CALC_X, CALC_Y, "CALC"));
@@ -130,7 +131,7 @@ export function wizardView(s: CalcState): CanvasScreen {
   if (app.row === 2) cursor = choiceBox(CALC_X, CALC_Y, 4);
   else {
     const r = rows(app.vars)[app.row] as WizRow;
-    cursor = choiceBox(optionXs(r)[app.col] ?? 1, 6 * (app.row + 1), r.options[app.col]?.length ?? 1);
+    cursor = choiceBox(optionXs(r)[app.col] ?? 0, 6 * (app.row + 1), r.options[app.col]?.length ?? 1);
   }
   return { kind: "canvas", items: [...items, ...boxes], cursor: { ...cursor, style: "block" } };
 }

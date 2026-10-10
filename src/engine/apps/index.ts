@@ -116,7 +116,18 @@ export function messageScreen(text: string): CanvasScreen {
   };
 }
 
+/**
+ * Indicators in the order of their segments along the strip (the captures list them so:
+ * `[L1] [L2] [L3] DEG UP`, `K DEG UP DOWN`, `FIX DEG UP`); 2nd and HYP, never captured, are placed
+ * in the free area left of FIX (D §2.2).
+ */
+const STRIP_ORDER: Indicator[] = ["l1", "2nd", "hyp", "fix", "k", "l2", "sci", "eng", "l3", "deg", "rad", "grad", "busy", "up", "down"];
+
 export function indicators(s: CalcState): Indicator[] {
+  return litIndicators(s).sort((a, b) => STRIP_ORDER.indexOf(a) - STRIP_ORDER.indexOf(b));
+}
+
+function litIndicators(s: CalcState): Indicator[] {
   const out: Indicator[] = [];
   if (s.second) out.push("2nd");
   if (s.hyp) out.push("hyp");

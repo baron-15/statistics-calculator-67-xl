@@ -2,10 +2,10 @@
  * The data editor (K §3.4; M §5.1; D §6 and E10; captures MT_DataEd*, MF_stats1var02).
  *
  * Layout: three columns at x 0–29, 33–62, 66–95 with 1-px rules at columns 31 and 64 (rows 0–22)
- * and a full rule at row 23; four data rows at a 6-row pitch in the 4×5 font, text at x = 33·col+1;
- * the selected cell inverse over its 30 columns × 6 rows; the first blank row of a list shows six
- * 4-px dashes on its bottom glyph row; the author line `L1(5)=` at y=25 with the value 2 px after
- * it. A formula list's label is inverse; the formula prompt is `♦L2=…` with a 4×5 block cursor.
+ * and a full rule at row 23; four data rows at a 6-row pitch in the 4×5 font, text at x = 33·col;
+ * the selected cell inverse over its 30 columns × 6 rows; the first blank row of a list shows the
+ * end marker `______`; the author line `L1(5)=` at y=25 with the value 2 px after it. A formula
+ * list's label is inverse; the formula prompt is `♦L2=…` with a 4×5 block cursor (MT_DataEd055).
  *
  * Keys: ▲ ▼ rows, ◄ ► columns (no wrap; the row is clamped to the new list's length), 2nd ▲ / 2nd ▼
  * top and first blank row. Typing starts a value on the author line; enter or ▼ stores it and moves
@@ -33,6 +33,8 @@ type DataApp = Extract<AppState, { kind: "data" }>;
 export const DATA_ROWS = 4;
 const COL_X = (c: number) => 33 * c;
 const AUTHOR_Y = 25;
+/** six 4-px dashes on the bottom glyph row (E10) */
+const END_OF_LIST = "______";
 
 const keepVisible = (top: number, row: number): number => clamp(top, row - (DATA_ROWS - 1), row);
 
@@ -149,11 +151,8 @@ export function dataView(s: CalcState): CanvasScreen {
       const i = app.top + r;
       const y = r * 6;
       const v = list[i];
-      if (v) items.push(menuText(COL_X(c) + 1, y, formatPlain(v, s.modes, 6, "E")));
-      else if (i === list.length) {
-        // end of list: six 4-px dashes on the bottom glyph row (E10)
-        for (let k = 0; k < 6; k++) items.push(fill(COL_X(c) + 1 + 5 * k, y + 4, 4, 1));
-      }
+      if (v) items.push(menuText(COL_X(c), y, formatPlain(v, s.modes, 6, "E")));
+      else if (i === list.length) items.push(menuText(COL_X(c), y, END_OF_LIST));
     }
   }
   const selR = app.row - app.top;
@@ -165,13 +164,13 @@ export function dataView(s: CalcState): CanvasScreen {
   if (app.formula) {
     const prefix = `♦L${app.col + 1}=`;
     const text = prefix + linearText(app.formula.row);
-    author.push(menuText(1, AUTHOR_Y, text));
-    screen.cursor = authorCursor(1 + glyphCount(prefix) * MENU_ADV, app.formula);
+    author.push(menuText(0, AUTHOR_Y, text));
+    screen.cursor = authorCursor(glyphCount(prefix) * MENU_ADV, app.formula);
   } else {
     const label = `L${app.col + 1}(${app.row + 1})=`;
-    author.push(menuText(1, AUTHOR_Y, label));
+    author.push(menuText(0, AUTHOR_Y, label));
     if (s.apps.formulas[app.col]) author.push(invert(0, AUTHOR_Y, glyphCount(label) * MENU_ADV + 1, 6));
-    const vx = 1 + glyphCount(label) * MENU_ADV + 2;
+    const vx = glyphCount(label) * MENU_ADV + 2;
     if (app.edit) {
       author.push(menuText(vx, AUTHOR_Y, linearText(app.edit.row)));
       screen.cursor = authorCursor(vx, app.edit);
@@ -184,14 +183,15 @@ export function dataView(s: CalcState): CanvasScreen {
   return screen;
 }
 
-/** The 4×5 block cursor of a linear editor whose text starts at x (MT_DataEd055). */
+/** The 4×5 block cursor over the glyph columns of a linear editor's text that starts at x (MT_DataEd055). */
 export function authorCursor(x: number, ed: EditorState, y = AUTHOR_Y) {
   const before = linearText(ed.row.slice(0, ed.cursor.index));
-  return { x: x + glyphCount(before) * MENU_ADV, y, w: 4, h: 5, style: cursorStyle(ed) };
+  return { x: x + glyphCount(before) * MENU_ADV + 1, y, w: 4, h: 5, style: cursorStyle(ed) };
 }
 
 export function dataArrows(s: CalcState): { up: boolean; down: boolean } {
   const app = s.app as DataApp;
   const longest = Math.max(...s.apps.lists.map((l) => l.length));
-  return { up: app.top > 0, down: longest > app.top + DATA_ROWS - 1 };
+  // ↓ only for elements below the window, not the end marker (MT_DataEd02 shows none)
+  return { up: app.top > 0, down: longest > app.top + DATA_ROWS };
 }
