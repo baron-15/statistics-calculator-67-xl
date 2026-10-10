@@ -8,19 +8,12 @@ Status as of 2026-10-10 (branch `build/ti30xs-emulator`):
 - Measured colors: faceplate #466474, case sides #d5d5d5, top cap #262626, LCD #a2a7a0, 2nd key #5b8b1b, function keys #405c6a, digit keys #d0d0d0.
 
 ## In progress
-- **Merged into `build/ti30xs-emulator`** (717 tests passing, plus 8 expected-fail minority captures):
-  - A editor;
-  - D renderer (175/183 TI captures pixel-exact);
-  - B math (every guidebook, TG and KB calculation example passes);
-  - E device skin (measured from TI's render; wordmark "B-30XS MultiView").
-- **Running:** C apps/router, in the worktree `../ti30xs-wt-apps`, branch `agent/apps`.
-- **After C:** end-to-end verification against the guidebook keystroke flows and TI's screen captures, and an LCD contrast check against the real-unit photo.
+- **All five build agents are merged** (909 unit tests + 17 e2e passing). The calculator works end to end in the browser: `npm run dev`.
+- **Running:** end-to-end fidelity verification (every guidebook example through keystrokes only, plus pixel checks of full flows), in worktree `../ti30xs-wt-verify`, branch `agent/verify`.
 
 ## Next
-1. Compile `docs/SPEC.md` from the research.
-2. Write the engine contracts: keys, state, expression tree, screen model.
-3. Parallel build agents: expression editor; parser and evaluator with number formatting; menus and modes (prb, angle, data/stat, table, memory, reset); dot-matrix renderer; device skin from the measured geometry.
-4. Verification: guidebook golden tests and a visual comparison with TI's screen images.
+1. Merge the verification branch and rerun everything.
+2. Final review; confirm the wordmark ("B-30XS MultiView") with the user.
 
 ## If paused
 Resume by reading this file and the research files, then continue from "Next".
