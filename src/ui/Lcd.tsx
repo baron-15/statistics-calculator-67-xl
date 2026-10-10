@@ -18,20 +18,20 @@ import { SEGMENTS, segmentLit, type Segment } from "./lcdIndicators";
 const INK = [0x4b, 0x52, 0x72] as const;
 /** Darkest ink at contrast 15. */
 const INK_DARK = [0x23, 0x27, 0x3c] as const;
-/** Fraction of the dot pitch a dot fills (photo: 80–85 %). */
-export const DOT_FILL = 0.82;
+/** Fraction of the dot pitch a dot fills (photo: 80–85 %; 0.86 reads closest at screen sizes). */
+export const DOT_FILL = 0.86;
 
 /**
- * Ink colour and opacity for a contrast level. Level 8 (the default) is the photo's ink at 92 %;
+ * Ink colour and opacity for a contrast level. Level 8 (the default) is the photo's ink at full strength;
  * lower levels fade towards the glass, higher ones darken. The 16 levels come from the ROM analysis
  * (display.md §0); the exact response curve is [unverified].
  */
 export function inkFor(contrast: number): { rgb: readonly [number, number, number]; alpha: number } {
   const c = Math.max(0, Math.min(15, Math.round(contrast)));
-  if (c <= 8) return { rgb: INK, alpha: 0.12 + 0.8 * (c / 8) ** 1.25 };
+  if (c <= 8) return { rgb: INK, alpha: 0.12 + 0.88 * (c / 8) ** 1.25 };
   const t = (c - 8) / 7;
   const rgb = INK.map((v, i) => Math.round(v + (INK_DARK[i]! - v) * t)) as unknown as readonly [number, number, number];
-  return { rgb, alpha: 0.92 + 0.08 * t };
+  return { rgb, alpha: 1 };
 }
 
 const rgba = ([r, g, b]: readonly number[], a: number) => `rgba(${r},${g},${b},${a.toFixed(3)})`;
