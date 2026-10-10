@@ -108,10 +108,12 @@ export function openApp(s: CalcState, a: Action, from: AppState): CalcState | nu
     case "K": {
       const k = s.apps.constant;
       // 2nd K turns constant mode off when it is on; otherwise it opens the editor showing the
-      // stored constant (GB p.36: [2nd][K] [2nd][K] [clear] … redefines it).
+      // stored constant (GB p.36: [2nd][K] [2nd][K] [clear] … redefines it) with the cursor on its
+      // first character, so typing overwrites it: GB-095 types *5−2 over the stored ² with no
+      // [clear] and the screen shows K=*5−2 (MT_Conk09).
       if (k?.on) return { ...s, apps: { ...s.apps, constant: { ...k, on: false } } };
       const row = cloneRows(k?.row ?? []);
-      return { ...s, app: { kind: "constant", editor: { ...emptyEditor(), row, cursor: endOf(row) } } };
+      return { ...s, app: { kind: "constant", editor: { ...emptyEditor(), row, cursor: { path: [], index: 0 } } } };
     }
     default: return null;
   }
