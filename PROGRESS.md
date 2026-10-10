@@ -10,8 +10,12 @@ Status as of 2026-10-10 (branch `build/ti30xs-emulator`):
 ## In progress
 - Research: all three are done (`docs/research/`: keys-menus, display, math-stats with 158 worked examples).
 - Phase 0 contracts are committed: keys, expr, screen, state, press, script, and stubs for editor/math/apps/display.
-- Wave 1 (running since 19:25 UTC, in worktrees based on 8125382): A (editor), D (renderer).
-- Wave 2 (after the 19:50 UTC usage reset): B (math), C (apps), E (device UI).
+- Wave 1: A (editor) is MERGED (251 tests). D (renderer) is still running; its worktree is `.claude/worktrees/agent-d-display`.
+- Wave 2 (running since 19:47 UTC), each in a TI-repo worktree:
+  - B math: `../ti30xs-wt-math`, branch `agent/math`
+  - C apps: `../ti30xs-wt-apps`, branch `agent/apps`
+  - E UI: `../ti30xs-wt-ui`, branch `agent/ui`
+- Merge order once done: D, B, C, E. Then verification (guidebook golden tests and a visual comparison).
 
 ## Next
 1. Compile `docs/SPEC.md` from the research.
