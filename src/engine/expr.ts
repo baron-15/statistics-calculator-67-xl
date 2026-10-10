@@ -21,7 +21,8 @@ export const SYMS = {
   sub: "−",
   /** multiplication is drawn as "*" on the home screen */
   mul: "*",
-  div: "/",
+  /** division is drawn "÷" on the home screen (fractions use the n/d template or the classic fracbar) */
+  div: "÷",
   lparen: "(",
   rparen: ")",
   comma: ",",
