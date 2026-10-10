@@ -108,7 +108,7 @@ describe("Memory and stored variables (GB p.10–12)", () => {
     expect(c.enter("rcl:x x²")).toMatchObject({ entry: "15²", result: "225" });
     expect(c.enter("sto var var")).toMatchObject({ entry: "Ans→y", result: "225" });
     expect(c.enter("var var")).toMatchObject({ entry: "y", result: "225" });
-    expect(c.enter("÷ 4")).toMatchObject({ entry: "Ans/4", result: "56.25" });
+    expect(c.enter("÷ 4")).toMatchObject({ entry: "Ans÷4", result: "56.25" });
   });
 
   it("GB-032 p.11–12: ENG mode volumes", () => {

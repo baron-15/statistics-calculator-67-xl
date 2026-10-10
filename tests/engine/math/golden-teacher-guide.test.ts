@@ -103,7 +103,7 @@ describe("Constant and memory (TG p.68–77)", () => {
   it("TG-19 p.72–73: test averages", () => {
     const c = new Calc();
     expect(c.res("96 + 76 + 85")).toBe("257");
-    expect(c.enter("÷ 3")).toMatchObject({ entry: "Ans/3", result: "85.66666667" });
+    expect(c.enter("÷ 3")).toMatchObject({ entry: "Ans÷3", result: "85.66666667" });
     expect(c.enter("sto var")).toMatchObject({ entry: "Ans→x", result: "85.66666667" });
     expect(c.res("92 + 83 + 97 + 86")).toBe("358");
     expect(c.res("÷ 4")).toBe("89.5");

@@ -63,7 +63,8 @@ export function numberParts(x: number, modes: Pick<Modes, "notation" | "decimals
     const small = Math.abs(x) < 1e-9;
     if (!small && intDigits(g) <= 10) {
       const r = normFixed(g, fix);
-      if (r !== null) return { neg, mant: r, exp: null };
+      // a value that rounds to zero shows no sign (FIX 2: −0.001 → 0.00)
+      if (r !== null) return { neg: neg && /[1-9]/.test(r), mant: r, exp: null };
     }
   }
   return { neg, ...sciParts(g, modes.notation === "ENG", fix) };
