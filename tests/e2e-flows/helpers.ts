@@ -5,7 +5,7 @@
  */
 import { expect } from "vitest";
 import { rowText, runScript, view, type CalcState } from "../../src/engine";
-import type { CanvasScreen, DrawItem, Indicator } from "../../src/engine/screen";
+import type { CanvasScreen, DrawItem, Indicator, View } from "../../src/engine/screen";
 import { FONT_METRICS } from "../../src/display/metrics";
 import { tokens } from "../../src/display/fonts";
 import { frameText, renderView } from "../../src/display/render";
@@ -145,3 +145,38 @@ export const MODE = {
   RAD: "MODE RIGHT ENTER CLEAR",
   DEG: "MODE ENTER CLEAR",
 } as const;
+
+// ---------------------------------------------------------------------------------------------
+// Reading the rendered frame back as text (big-font cells), for scrolling and arrow checks
+
+const GLYPH_CACHE = new Map<string, string>();
+
+/** The 6×8 pixel cell of one big-font character drawn at the top left, as a string key. */
+function glyphKey(ch: string): string {
+  let k = GLYPH_CACHE.get(ch);
+  if (k === undefined) {
+    const v: View = { screen: { kind: "canvas", items: [{ t: "text", x: 0, y: 0, font: "big", text: ch }] }, indicators: [], contrast: 8, on: true };
+    k = frameText(renderView(v, { blinkOn: false })).slice(0, 8).map((r) => r.slice(0, 6)).join("\n");
+    GLYPH_CACHE.set(ch, k);
+  }
+  return k;
+}
+
+/**
+ * The 16 cells of the screen line whose glyph tops are at row `top`, read back from the rendered
+ * frame by matching each 6×8 cell against the big-font glyphs of `alphabet` ("?" when none matches).
+ */
+export function readLine(s: CalcState, top: number, alphabet = "0123456789+−*÷().◀▶ ", blinkOn = false): string {
+  const rows = frameText(renderView(view(s), { blinkOn }));
+  let out = "";
+  for (let c = 0; c < 16; c++) {
+    const key = rows.slice(top, top + 8).map((r) => r.slice(c * 6, c * 6 + 6)).join("\n");
+    out += [...alphabet].find((a) => glyphKey(a) === key) ?? "?";
+  }
+  return out;
+}
+
+/** Is the matrix pixel (x, y) lit in the rendered frame? */
+export function lit(s: CalcState, x: number, y: number, blinkOn = false): boolean {
+  return frameText(renderView(view(s), { blinkOn }))[y]?.[x] === "#";
+}
