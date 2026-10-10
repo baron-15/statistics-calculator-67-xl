@@ -9,8 +9,8 @@
  * 3. The table: `x` and `y` headers (menu-font variable glyphs at x 10 and 46), a rule at column 36
  *    (rows 0–23) and at row 24, three rows at y 6/12/18 (x values at x=0, y values at x=38), the
  *    selected x cell inverse over columns 0–34, and `x=<value>` at y=26 (MT_functable04). Auto scrolls without end in both
- *    directions; Ask-x rows start empty: type x and enter computes y (the row stays selected, as
- *    in MT_functable07), delete removes a row.
+ *    directions; Ask-x rows start empty: type x and enter computes y and moves to the next line,
+ *    staying on the third (TG p.22; MT_functable07), delete removes a row.
  * clear backs up one screen (table → setup → y= → Home).
  * Cells that fail to evaluate show `Error` (SPEC: assumption).
  */
@@ -232,7 +232,10 @@ function commitX(s: CalcState, app: ViewApp, ed: EditorState): CalcState {
   const t = s.apps.table;
   const idx = app.first + app.sel;
   const xs = idx < t.xs.length ? t.xs.map((v, i) => (i === idx ? r.value : v)) : [...t.xs, r.value];
-  return { ...s, apps: { ...s.apps, table: { ...t, xs } }, app: { ...app, edit: null } };
+  // the cursor moves down to the next of the three lines; on the third it stays (TG p.22
+  // "5 [enter] 6 [enter] 10 [enter]", and "to enter more values, highlight any of the three
+  // lines"; MT_functable07 shows the third row, 8, still selected)
+  return { ...s, apps: { ...s.apps, table: { ...t, xs } }, app: { ...app, sel: Math.min(2, app.sel + 1), edit: null } };
 }
 
 export function tableView(s: CalcState): CanvasScreen {
