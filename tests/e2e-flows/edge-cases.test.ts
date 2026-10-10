@@ -6,6 +6,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { view } from "../../src/engine";
+import { missingGlyphs } from "../../src/display/fonts";
 import { entry, highlighted, homeText, indicators, last, lines, lit, MODE, readLine, run, screenLines } from "./helpers";
 
 const LONG = "1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10"; // 20 cells
@@ -285,6 +286,24 @@ describe("the constant K (K §3.12)", () => {
   it("a combination over 47 characters is an EQUATION LENGTH ERROR (GB p.37)", () => {
     const s = run(`2ND K ${"+ 1 ".repeat(20)}ENTER ${"1 ".repeat(8)}ENTER`);
     expect(screenLines(s)).toEqual(["EQUATION LENGTH", "ERROR"]);
+  });
+});
+
+describe("function table value formats (TG p.97 notes)", () => {
+  const ask = "TABLE VAR ENTER DOWN DOWN RIGHT ENTER DOWN ENTER";
+
+  it("Ask-x: 2π shows as 2π, 2.0π as 6.28319, a fraction as a fraction", () => {
+    expect(screenLines(run(`${ask} 2 PI ENTER`))[1]).toBe("2π 6.283185307");
+    expect(screenLines(run(`${ask} 2 PI ENTER UP`)).at(-1)).toBe("ẋ=2π");
+    expect(missingGlyphs("menu", "2π")).toEqual([]);
+    expect(screenLines(run(`${ask} 2.0 PI ENTER`))[1]).toBe("6.28319 6.283185307");
+    expect(screenLines(run(`${ask} 1 FRAC 2 ENTER`))[1]).toBe("1⁄2 1⁄2");
+  });
+
+  it("a decimal step forces decimal y values; an integer step keeps fractions", () => {
+    const f = "TABLE VAR FRAC 2 ENTER DOWN CLEAR";
+    expect(screenLines(run(`${f} 1 DOWN DOWN ENTER`)).slice(1, 4)).toEqual(["0 0", "1 1⁄2", "2 1"]);
+    expect(screenLines(run(`${f} .5 DOWN DOWN ENTER`)).slice(1, 4)).toEqual(["0 0", "0.5 0.25", "1 0.5"]);
   });
 });
 

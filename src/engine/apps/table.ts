@@ -176,6 +176,21 @@ export function tableY(s: CalcState, x: Value): Value | null {
   return r.ok ? r.value : null;
 }
 
+/**
+ * An x value as its cell shows it: an exact multiple of π typed in Ask-x keeps its π form (TG p.97:
+ * "if you enter 2π, the x-value displays 2π. If you enter 2.0π, the x-value displays 6.28319"),
+ * written like the restricted contexts' fractions (`2π`, `π⁄2`); anything else as formatPlain.
+ */
+function xText(x: Value, s: CalcState, max: number): string {
+  const ex = x.exact;
+  if (ex && ex.pi && ex.root === 1n && ex.n !== 0n) {
+    const a = ex.n < 0n ? -ex.n : ex.n;
+    const text = `${ex.n < 0n ? "⁻" : ""}${a === 1n ? "" : a}π${ex.d === 1n ? "" : `⁄${ex.d}`}`;
+    if (glyphCount(text) <= max) return text;
+  }
+  return formatPlain(x, s.modes, max);
+}
+
 function rowX(s: CalcState, i: number): Value | undefined {
   const t = s.apps.table;
   return t.ask ? t.xs[i] : autoX(t, i);
@@ -245,7 +260,7 @@ export function tableView(s: CalcState): CanvasScreen {
     const x = rowX(s, app.first + r);
     if (!x) continue;
     const y = 6 + 6 * r;
-    items.push(menuText(0, y, formatPlain(x, s.modes, 7)));
+    items.push(menuText(0, y, xText(x, s, 7)));
     const v = tableY(s, x);
     items.push(menuText(38, y, v ? formatPlain(v, s.modes, 11) : s.apps.table.func.length ? "Error" : ""));
   }
@@ -257,7 +272,7 @@ export function tableView(s: CalcState): CanvasScreen {
     screen.cursor = authorCursor(2 * 5, app.edit, 26);
   } else {
     const x = rowX(s, app.first + app.sel);
-    items.push(menuText(0, 26, "ẋ=" + (x ? formatPlain(x, s.modes, 12) : "")));
+    items.push(menuText(0, 26, "ẋ=" + (x ? xText(x, s, 12) : "")));
   }
   return screen;
 }
