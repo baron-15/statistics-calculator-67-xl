@@ -3,6 +3,7 @@
  * and y= editors), built as the apps layer would build them from D §4, §6 and compared pixel for
  * pixel with the TI-SmartView captures.
  */
+import { sym } from "../../src/engine/expr";
 import type { DrawItem, View } from "../../src/engine/screen";
 import { canvas, inv, line } from "./build";
 import { suite, type Case } from "./golden";
@@ -43,6 +44,16 @@ const MENUS: Case[] = [
   { name: "MF_statspr206", what: "2-Var results: C↑Σxy, a, b with ⁻", view: V(menu(["2-Var:L1,L2"], 0, ["C↑Σxy=5234.15", "D:a=0.677325190", "E↓b≡⁻18.6663732"], 2)) },
   { name: "MF_statspr207", what: "2-Var results: r, x′, y′", view: V(menu(["2-Var:L1,L2"], 0, ["F↑r≡0.963411717", "G:x′", "H↓y′"], 2)) },
   { name: "MF_stats2var05B", what: "2-Var results: G↑x′ selected, I↓minX=45", view: V(menu(["2-Var:L1,L2"], 0, ["G↑x′", "H:y′", "I↓minX=45"], 0)) },
+  { name: "MF_StAngle02_1", what: "DMS R◂▸P tabs (second capture)", view: V(menu(["DMS", "R◂▸P"], 0, ["1:°", "2:′", "3↓″"], 0)) },
+  { name: "MF_stats1var01_1", what: "CLEAR FORMULA, item 4 selected", view: V(menu(["CLEAR", "FORMULA"], 0, ["2↑Clear L2", "3:Clear L3", "4:Clear ALL"], 2)) },
+  { name: "MF_stats2var01", what: "CLEAR FORMULA, item 4 selected", view: V(menu(["CLEAR", "FORMULA"], 0, ["2↑Clear L2", "3:Clear L3", "4:Clear ALL"], 2)) },
+  { name: "MF_statspr201", what: "CLEAR FORMULA, item 4 selected", view: V(menu(["CLEAR", "FORMULA"], 0, ["2↑Clear L2", "3:Clear L3", "4:Clear ALL"], 2)) },
+  { name: "MT_DataEd03", what: "CLEAR FORMULA, item 4 selected", view: V(menu(["CLEAR", "FORMULA"], 0, ["2↑Clear L2", "3:Clear L3", "4:Clear ALL"], 2)) },
+  { name: "MT_DataEd03b_1", what: "FORMULA tab scrolled to item 5", view: V(menu(["CLEAR", "FORMULA"], 1, ["3↑Clear L2 Frmla", "4:Clear L3 Frmla", "5:Clear ALL"], 2)) },
+  { name: "MF_statspr03", what: "STATS menu with StatVars, item 1 selected", view: V(menu(["STATS"], 0, ["1:1-Var Stats", "2:2-Var Stats", "3:StatVars"], 0)) },
+  { name: "MF_statspr203", what: "STATS menu, item 2 selected", view: V(menu(["STATS"], 0, ["1:1-Var Stats", "2:2-Var Stats"], 1)) },
+  { name: "MF_statspr205", what: "2-Var results: Sx≡19.89137166 fills the line", view: V(menu(["2-Var:L1,L2"], 0, ["1:n=4", "2:x̄≡56.5", "3↓Sx≡19.89137166"], 0)) },
+  { name: "MF_statspr07B", what: "1-Var results with x̄≡12", view: V(menu(["1-Var:L1,L2"], 0, ["1:n=3", "2:x̄≡12", "3↓Sx=Error"], 0)) },
 ];
 
 // ---------------------------------------------------------------------------------------------
@@ -72,6 +83,8 @@ const MODE: Case[] = [
   { name: "MF_AngModeRad", what: "MODE with RAD", view: V(mode({ ...DEFAULTS, angle: 1 })) },
   { name: "MF_TrigModeFix1", what: "MODE with FIX 1: one digit inverse, FLOAT plain", view: V(mode({ ...DEFAULTS, fix: 1 })) },
   { name: "MF_x10n01", what: "MODE with SCI", view: V(mode({ ...DEFAULTS, notation: 1 })) },
+  { name: "MF_AngModeFix2", what: "MODE with FIX 2", view: V(mode({ ...DEFAULTS, fix: 2 })) },
+  { name: "MF_RcPolModeFix1", what: "MODE with FIX 1", view: V(mode({ ...DEFAULTS, fix: 1 })) },
 ];
 
 const WIZARDS: Case[] = [
@@ -81,8 +94,18 @@ const WIZARDS: Case[] = [
     view: V([m(0, 0, "1-VAR STATS"), m(0, 6, "DATA: L1 L2 L3"), minv(30, 6, 2), m(0, 12, "FRQ: ONE L1 L2 L3"), minv(25, 12, 3), m(70, 24, "CALC")]),
   },
   {
+    name: "MF_statspr04",
+    what: "1-VAR STATS setup with FRQ L2",
+    view: V([m(0, 0, "1-VAR STATS"), m(0, 6, "DATA: L1 L2 L3"), minv(30, 6, 2), m(0, 12, "FRQ: ONE L1 L2 L3"), minv(60, 12, 2), m(70, 24, "CALC")]),
+  },
+  {
     name: "MF_stats2var04",
     what: "2-VAR STATS setup: xDATA/yDATA with the variable glyphs",
+    view: V([m(0, 0, "2-VAR STATS"), m(0, 6, "ẋDATA: L1 L2 L3"), minv(35, 6, 2), m(0, 12, "ẏDATA: L1 L2 L3"), minv(50, 12, 2), m(70, 24, "CALC")]),
+  },
+  {
+    name: "MF_statspr204",
+    what: "2-VAR STATS setup (second capture)",
     view: V([m(0, 0, "2-VAR STATS"), m(0, 6, "ẋDATA: L1 L2 L3"), minv(35, 6, 2), m(0, 12, "ẏDATA: L1 L2 L3"), minv(50, 12, 2), m(70, 24, "CALC")]),
   },
 ];
@@ -121,6 +144,59 @@ const EDITOR: Case[] = [
       { x: 66, y: 25, w: 4, h: 5, style: "block" },
     ),
   },
+  {
+    name: "MT_DataEd02",
+    what: "E10: a formula list (L2 = L1 as decimals): its author label inverse, the value after it",
+    view: V([
+      m(0, 0, "1⁄4"), m(0, 6, "1⁄2"), m(0, 12, "3⁄4"), m(0, 18, "1"),
+      m(33, 0, "0.25"), cell(1, 0), m(33, 6, "0.5"), m(33, 12, "0.75"), m(33, 18, "1"), m(66, 0, END), ...rules,
+      m(0, 25, "L2(1)="), { t: "rect", x: 0, y: 25, w: 31, h: 6, mode: "invert" }, m(32, 25, "0.25"),
+    ]),
+  },
+  {
+    name: "MT_DataEd04",
+    what: "an empty L2 cell selected under L1 = 8, ⁻1, 4",
+    view: V([m(0, 0, "8"), m(0, 6, "⁻1"), m(0, 12, "4"), m(0, 18, END), m(33, 0, END), cell(1, 0), m(66, 0, END), ...rules, m(0, 25, "L2(1)=")]),
+  },
+  {
+    name: "MT_DataEd05",
+    what: "formula prompt ♦L2= over an empty L2",
+    view: V([m(0, 0, "8"), m(0, 6, "⁻1"), m(0, 12, "4"), m(0, 18, END), m(33, 0, END), cell(1, 0), m(66, 0, END), ...rules, m(0, 25, "♦L2=")]),
+  },
+  {
+    name: "MF_statspr06",
+    what: "L1 = 13, 10, 15 with frequencies in L2; the end of L1 selected",
+    view: V([m(0, 0, "13"), m(0, 6, "10"), m(0, 12, "15"), m(0, 18, END), cell(0, 3), m(33, 0, "0.5"), m(33, 6, "1"), m(33, 12, "0.5"), m(33, 18, END), ...rules, m(0, 25, "L1(5)=")]),
+  },
+  {
+    name: "MT_DataEd06",
+    what: "formula results 46.4, 30.2, 39.2 in L2",
+    view: V([
+      m(0, 0, "8"), m(0, 6, "⁻1"), m(0, 12, "4"), m(0, 18, END),
+      m(33, 0, "46.4"), cell(1, 0), m(33, 6, "30.2"), m(33, 12, "39.2"), m(33, 18, END), m(66, 0, END), ...rules,
+      m(0, 25, "L2(1)="), { t: "rect", x: 0, y: 25, w: 31, h: 6, mode: "invert" }, m(32, 25, "46.4"),
+    ]),
+  },
+  {
+    name: "MT_DataEd07",
+    what: "L1 scrolled down: the empty cell inverse at the bottom",
+    view: V([m(0, 0, "⁻1"), m(0, 6, "4"), m(0, 12, "21"), m(0, 18, END), cell(0, 3), m(33, 0, "30.2"), m(33, 6, "39.2"), m(33, 12, "69.8"), m(33, 18, END), ...rules, m(0, 25, "L1(5)=")]),
+  },
+  {
+    name: "MF_statspr202",
+    what: "L1 integers and L2 decimals; the empty L2 cell selected",
+    view: V([m(0, 0, "49"), m(0, 6, "65"), m(0, 12, "79"), m(0, 18, END), m(33, 0, "14.45"), m(33, 6, "20.21"), m(33, 12, "38.45"), m(33, 18, END), cell(1, 3), ...rules, m(0, 25, "L2(5)=")]),
+  },
+  {
+    name: "MF_statspr02",
+    what: "frequencies 0.5, 1, 0.5 in L2",
+    view: V([m(0, 0, "13"), m(0, 6, "10"), m(0, 12, "11"), m(0, 18, END), m(33, 0, "0.5"), m(33, 6, "1"), m(33, 12, "0.5"), m(33, 18, END), cell(1, 3), ...rules, m(0, 25, "L2(5)=")]),
+  },
+  {
+    name: "MF_stats2var02",
+    what: "two short lists; the end marker selected in L2",
+    view: V([m(0, 0, "45"), m(0, 6, "55"), m(0, 12, END), m(33, 0, "30"), m(33, 6, "25"), m(33, 12, END), cell(1, 2), m(66, 0, END), ...rules, m(0, 25, "L2(3)=")]),
+  },
 ];
 
 const TABLE: Case[] = [
@@ -144,10 +220,31 @@ const TABLE: Case[] = [
     what: "table setup with Start=15, Step=3",
     view: V([line(0, "Start=15"), line(1, "Step=3"), line(2, "Auto"), inv(2, 0, 4), line(2, "Ask-ẋ", 6), line(3, "OK", 14)]),
   },
+  {
+    name: "MT_functable06",
+    what: "table setup with Ask-x selected",
+    view: V([line(0, "Start=0"), line(1, "Step=1"), line(2, "Auto"), line(2, "Ask-ẋ", 6), inv(2, 6, 11), line(3, "OK", 14)]),
+  },
+  {
+    name: "MT_functable07",
+    what: "Ask-x table: typed x values; the new x cell inverse; x=8 below",
+    view: V([
+      m(10, 0, "ẋ"), m(46, 0, "ẏ"), fill(36, 0, 1, 24), fill(0, 24, 96, 1),
+      m(0, 6, "2"), m(38, 6, "2700"), m(0, 12, "7"), m(38, 12, "450"), m(0, 18, "8"), m(38, 18, "0"),
+      { t: "rect", x: 0, y: 18, w: 35, h: 6, mode: "invert" },
+      m(0, 26, "ẋ=8"),
+    ]),
+  },
   { name: "MT_functable01", what: "y= function entry with the variable glyph", view: V([line(0, "y=ẋ(36−ẋ)")]) },
   { name: "MT_functable05", what: "y=3600−450x", view: V([line(0, "y=3600−450ẋ")]) },
   { name: "MT_Conk02", what: "constant editor K=*2+3", view: V([line(0, "K=*2+3")]) },
   { name: "MT_Conk09", what: "constant editor K=*5−2", view: V([line(0, "K=*5−2")]) },
+  { name: "MT_ConK01", what: "constant editor K= (cursor blink off)", view: V([line(0, "K=")]) },
+  {
+    name: "MT_Conk05",
+    what: "constant editor K=²: a math item whose script raises the line by 2 rows",
+    view: V([{ t: "text", x: 0, y: 2, font: "big", text: "K=" }, { t: "math", x: 12, y: 0, row: [sym("square")] }]),
+  },
 ];
 
 suite("menus", MENUS);

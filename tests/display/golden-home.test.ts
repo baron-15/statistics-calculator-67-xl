@@ -50,6 +50,7 @@ const CLASSIC: Case[] = [
 
 const PLAIN: Case[] = [
   { name: "GS_scroll01", what: "1+1 = 2", view: H({ history: [["1+1", "2"]] }) },
+  { name: "GS_scroll02", what: "1+1 = 2, 2+2 = 4", view: H({ history: [["1+1", "2"], ["2+2", "4"]] }) },
   { name: "GS_scroll04", what: "4 history lines fill the screen; no entry line after enter", view: H({ history: [["1+1", "2"], ["2+2", "4"], ["3+3", "6"], ["4+4", "8"]] }) },
   {
     name: "GS_scroll05",
@@ -71,6 +72,22 @@ const PLAIN: Case[] = [
   { name: "GS_mem03", what: "15→x = 15", view: H({ history: [["15→x", "15"]] }) },
   { name: "MF_prob01", what: "typing 8 with the block cursor after it", view: H({ entry: "8" }) },
   { name: "MF_prob03", what: "8 nPr 3 = 336", view: H({ history: [["8 nPr 3", "336"]] }) },
+  { name: "MF_prob07", what: "5→rand = 5", view: H({ history: [["5→rand", "5"]] }) },
+  { name: "MF_prob08", what: "+ rand = 0.000093165 on the next line (4+11 cells)", view: H({ history: [["5→rand", "5"], ["rand", "0.000093165"]] }) },
+  { name: "MF_probpr01", what: "typing 25 (blink off)", view: H({ entry: "25" }), blinkOn: false },
+  { name: "MF_probpr03", what: "25 nCr 3 = 2300", view: H({ history: [["25 nCr 3", "2300"]] }) },
+  { name: "MF_Percent01", what: "2%*150 = 3", view: H({ history: [["2%*150", "3"]] }) },
+  { name: "MF_Percent03", what: "3%*5000 = 150", view: H({ history: [["3%*5000", "150"]] }) },
+  { name: "MF_Percent04", what: "+ Ans+2.3%*7300 = 317.9 on the next line", view: H({ history: [["3%*5000", "150"], ["Ans+2.3%*7300", "317.9"]] }) },
+  { name: "MF_Pi1", what: "2*π = 2π", view: H({ history: [["2*π", "2π"]] }) },
+  { name: "MF_Trig1", what: "tan(45) = 1", view: H({ history: [["tan(45)", "1"]] }) },
+  { name: "MF_hyp01", what: "sinh(5)+2 = 76.20321058 on the next line", view: H({ history: [["sinh(5)+2", "76.20321058"]] }) },
+  { name: "MF_log01", what: "log(1) = 0", view: H({ history: [["log(1)", "0"]] }) },
+  { name: "MF_stats1var06", what: "x̄ = 52.5", view: H({ history: [["x̄", "52.5"]] }) },
+  { name: "MT_Conk03", what: "4*2+3 = 11", view: H({ history: [["4*2+3", "11"]] }) },
+  { name: "MT_Conk10", what: "⁻5*5−2 = ⁻27", view: H({ history: [["⁻5*5−2", "⁻27"]] }) },
+  { name: "MT_Conk11", what: "+ ⁻1*5−2 = ⁻7", view: H({ history: [["⁻5*5−2", "⁻27"], ["⁻1*5−2", "⁻7"]] }) },
+  { name: "GS_mem06", what: "typing Ans→y under two items (blink off)", view: H({ history: [["15→x", "15"], ["15²", "225"]], entry: "Ans→y" }), blinkOn: false },
   { name: "MF_prob04", what: "52 nCr 5 = 2598960 on the next line (8+7 cells)", view: H({ history: [["52 nCr 5", "2598960"]] }) },
   { name: "MF_prob05", what: "4! = 24", view: H({ history: [["4!", "24"]] }) },
   {
@@ -109,7 +126,11 @@ const MP: Case[] = [
   { name: "MF_powerRootsInv1", what: "E3: 5²+4^(2+1) = 89, result top-aligned", view: H({ history: [[cat("5²+4", pow("(2+1)")), "89"]] }) },
   { name: "MF_powerRootsInv2", what: "10⁻² = 1/100", view: H({ history: [[cat("10", pow("⁻2")), [frac("1", "100")]]] }) },
   { name: "MF_powerRootsInv6", what: "2⁻¹ (x⁻¹ drawn as a small ⁻1 script) = 1/2", view: H({ history: [["2⁻¹", [frac("1", "2")]]] }) },
+  { name: "MT_Conk06", what: "5² = 25", view: H({ history: [["5²", "25"]] }) },
   { name: "MT_Conk07", what: "5² = 25, 20² = 400", view: H({ history: [["5²", "25"], ["20²", "400"]] }) },
+  { name: "MT_Conk08", what: "+ 1+1 = 2 after K is turned off", view: H({ history: [["5²", "25"], ["20²", "400"], ["1+1", "2"]] }) },
+  { name: "MF_Pi3", what: "π*12² = 144π", view: H({ history: [["π*12²", "144π"]] }) },
+  { name: "GS_mem05", what: "15→x = 15, 15² = 225", view: H({ history: [["15→x", "15"], ["15²", "225"]] }) },
   { name: "MF_Pi4", what: "π*12² = 144π, toggled 144π◂▸ = 452.3893421 on the next line", view: H({ history: [["π*12²", "144π"], ["144π", "452.3893421", true]] }) },
   { name: "GS_mem07", what: "15→x, 15² = 225, Ans→y = 225", view: H({ history: [["15→x", "15"], ["15²", "225"], ["Ans→y", "225"]] }) },
   {
@@ -129,6 +150,16 @@ const MP: Case[] = [
     name: "GS_mem_p03",
     what: "bottom-aligned 9-row script lines",
     view: H({ history: [["350*560→x", cat("196", ee("3"))], ["340*610→y", cat("207.4", ee("3"))], ["150*196000", cat("29.4", ee("6"))]] }),
+  },
+  {
+    name: "GS_Mem_P04b",
+    what: "150*196000 = 29.4*10⁶ and 210*196000 = 41.16*10⁶, bottom-aligned",
+    view: H({ history: [["340*610→y", cat("207.4", ee("3"))], ["150*196000", cat("29.4", ee("6"))], ["210*196000", cat("41.16", ee("6"))]] }),
+  },
+  {
+    name: "GS_mem_p05a",
+    what: "the 29.4*10⁶ result line cut at the top is not drawn",
+    view: H({ history: [["150*196000", cat("29.4", ee("6"))], ["210*196000", cat("41.16", ee("6"))], ["150*y", cat("31.11", ee("6"))]] }),
   },
   {
     name: "GS_mem_p06",
@@ -171,6 +202,18 @@ const MP: Case[] = [
   },
   { name: "MF_Percent02", what: "1/5▸% = 20%", view: H({ history: [[cat(frac("1", "5"), "▸%"), "20%"]] }) },
   { name: "MF_StAngle03", what: "sin(30°) = 1/2 (RAD mode), the result top-aligned", view: H({ history: [["sin(30°)", [frac("1", "2")]]] }) },
+  { name: "MF_StAngle10", what: "sin(30) = 1/2 (FIX)", view: H({ history: [["sin(30)", [frac("1", "2")]]] }) },
+  {
+    name: "MF_StAngle13",
+    what: "sin(π/6ʳ) = 1/2: the unedited capture behind MF_Trig4 and MF_StAngle11/12 (5-px bar, ʳ after the fraction)",
+    view: H({ history: [["sin(30°)", [frac("1", "2")]], [cat("sin(", frac("π", "6"), "ʳ)"), [frac("1", "2")]]] }),
+  },
+  {
+    name: "MF_StAngle11.",
+    what: "sin(30) = 1/2, sin(π/6) = 1/2",
+    view: H({ history: [["sin(30)", [frac("1", "2")]], [cat("sin(", frac("π", "6"), ")"), [frac("1", "2")]]] }),
+    fails: "edited image: the ʳ of sin(π/6ʳ) erased, bar stretched to 7 px (unedited: MF_StAngle13)",
+  },
   { name: "MF_StAngle05", what: "+ 2πʳ = 360 below a fraction line", view: H({ history: [["sin(30°)", [frac("1", "2")]], ["2πʳ", "360"]] }) },
   { name: "MF_StAngle07", what: "+ 1.5▸DMS = 1°30′0″ (7+7 cells, same line)", view: H({ history: [["sin(30°)", [frac("1", "2")]], ["2πʳ", "360"], ["1.5▸DMS", "1°30′0″"]] }) },
   { name: "MF_Trig3", what: "5*cos(60) = 5/2", view: H({ history: [["5*cos(60)", [frac("5", "2")]]] }) },
@@ -178,13 +221,13 @@ const MP: Case[] = [
     name: "MF_Trig4",
     what: "tan(π/4) = 1 with tall parentheses",
     view: H({ history: [[cat("tan(", frac("π", "4"), ")"), "1"]] }),
-    fails: "7-px bar under one π (edited image; MF_Trig6-1 draws the same π/4 with a 5-px bar)",
+    fails: "edited image: the ʳ after π/4 was erased and the bar stretched to 7 px (MF_StAngle13 is the unedited sin(π/6ʳ); MF_Trig6-1 draws π/4 with a 5-px bar)",
   },
   {
     name: "MF_StAngle12",
     what: "sin(π/6) = 1/2, sin(30°) = 1/2",
     view: H({ history: [[cat("sin(", frac("π", "6"), ")"), [frac("1", "2")]], ["sin(30°)", [frac("1", "2")]]] }),
-    fails: "7-px bar under one π, as in MF_Trig4 (majority: bar = content width, MF_Trig6-1)",
+    fails: "edited image: the ʳ of sin(π/6ʳ) erased, bar stretched to 7 px (unedited: MF_StAngle13)",
   },
   {
     name: "MF_Trig6-1",
@@ -209,6 +252,7 @@ const MP: Case[] = [
     view: H({ history: [["tan⁻¹(1)", "0.785398163"], ["0.7853981633975", [frac("π", "4")], true]] }),
   },
   { name: "MF_Trig7-1", what: "tan⁻¹(7/3) = 66.8 with tall parentheses", view: H({ history: [[cat("tan⁻¹(", frac("7", "3"), ")"), "66.8"]] }) },
+  { name: "MF_Trig7-2", what: "+ 90−Ans = 23.2 below a fraction line", view: H({ history: [[cat("tan⁻¹(", frac("7", "3"), ")"), "66.8"], ["90−Ans", "23.2"]] }) },
   {
     name: "MF_Trig7-3",
     what: "√(3²+7²) = √58; the tan⁻¹(7/3) line is cut at the top and not drawn",
@@ -225,6 +269,12 @@ const MP: Case[] = [
     what: "10^log(2) = 2 and ln(10⁵) = 5",
     view: H({ history: [["log(1)", "0"], ["ln(5)*2", "3.218875825"], [cat("10", pow("log(2)")), "2"], [cat("ln(10", pow("5"), ")"), "5"]] }),
     fails: "older build: draws the partly hidden top line and bottom-aligns results (majority: GS_mem_p02, MF_Trig7-3; E3, GS_order06)",
+  },
+  {
+    name: "GS_lastans02",
+    what: "3*3 = 9, Ans*3 = 27",
+    view: H({ history: [["3*3", "9"], ["Ans*3", "27"]] }),
+    fails: "older build: lower-case `ans` (every other capture and the guidebooks show Ans, K §4.4)",
   },
   {
     name: "GS_lastans03",
