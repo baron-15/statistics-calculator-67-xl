@@ -12,10 +12,10 @@
  * Text is split into glyph tokens with a few multi-character sequences that the ROM draws as one
  * glyph: `⁻¹`, `x̄`, `◂▸`, and the `n/d` of `▸n/d◂▸Un/d` (MF_frac02).
  */
-import bigJson from "./fonts/font_big.json";
-import smallJson from "./fonts/font_mathprint_small.json";
-import menuJson from "./fonts/font_menu_small.json";
-import editorJson from "./fonts/font_editor_small.json";
+import bigJson from "./fonts/font_big.json" with { type: "json" };
+import smallJson from "./fonts/font_mathprint_small.json" with { type: "json" };
+import menuJson from "./fonts/font_menu_small.json" with { type: "json" };
+import editorJson from "./fonts/font_editor_small.json" with { type: "json" };
 import { BIG_EXTRA, MENU_EXTRA, SMALL_EXTRA, TINY } from "./glyphs";
 import type { FontId } from "./metrics";
 
