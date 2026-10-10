@@ -8,7 +8,9 @@ Status as of 2026-10-10 (branch `build/ti30xs-emulator`):
 - Measured colors: faceplate #466474, case sides #d5d5d5, top cap #262626, LCD #a2a7a0, 2nd key #5b8b1b, function keys #405c6a, digit keys #d0d0d0.
 
 ## In progress
-- Research (three agents): (1) keys, modes and menus; (2) math, stats and worked examples; (3) the dot-matrix display and prior art. Findings go to the scratchpad `ti30xs*/research-*.md`.
+- Research: keys/menus and the display are done (`docs/research/`). The math/stats research is still running.
+- Phase 0 contracts are committed: keys, expr, screen, state, press, script, and stubs for editor/math/apps/display.
+- Wave 1 build agents: A (editor), D (renderer), E (device UI). Wave 2, after the math research: B (math), C (apps).
 
 ## Next
 1. Compile `docs/SPEC.md` from the research.
