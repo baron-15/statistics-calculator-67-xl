@@ -28,7 +28,7 @@ describe("plain symbols (same in both modes)", () => {
 
 describe("operators, postfix functions and conversions after a number", () => {
   const cases: [string, string][] = [
-    ["+", "2+"], ["−", "2−"], ["×", "2*"], ["÷", "2/"], ["x²", "2²"], ["x⁻¹", "2⁻¹"], ["sto", "2→"], ["%", "2%"],
+    ["+", "2+"], ["−", "2−"], ["×", "2*"], ["÷", "2÷"], ["x²", "2²"], ["x⁻¹", "2⁻¹"], ["sto", "2→"], ["%", "2%"],
     ["▸%", "2▸%"], ["FRAC_CONV", "2▸n/d◂▸Un/d"], ["F_D", "2▸F◂▸D"], ["◂▸", "2◂▸"],
   ];
   for (const ctx of [MP, CL]) {
@@ -223,7 +223,7 @@ describe("MathPrint template keys", () => {
 
 describe("Ans insertion on an empty entry (K §4.4)", () => {
   const cases: [string, string][] = [
-    ["+ 2", "Ans+2"], ["− 2", "Ans−2"], ["× 3", "Ans*3"], ["÷ 4", "Ans/4"], ["x²", "Ans²"], ["x⁻¹", "Ans⁻¹"],
+    ["+ 2", "Ans+2"], ["− 2", "Ans−2"], ["× 3", "Ans*3"], ["÷ 4", "Ans÷4"], ["x²", "Ans²"], ["x⁻¹", "Ans⁻¹"],
     ["sto var", "Ans→x"], ["% × 2", "Ans%*2"],
   ];
   for (const ctx of [MP, CL]) {
