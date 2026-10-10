@@ -161,11 +161,6 @@ export function parseEntry(row: Row): Entry {
   return { expr, toggle, ...(conv ? { conv } : {}), ...(store ? { store } : {}) };
 }
 
-/** Parse a bare expression row (template slots, table functions, list formulas). */
-export function parseExpr(row: Row): Ast {
-  return new Parser().parseAll(tokenize(row));
-}
-
 class Parser {
   private toks: Tok[] = [];
   private pos = 0;

@@ -4,7 +4,7 @@
 import { CalcError } from "../errors";
 import type { SymId } from "../expr";
 import { norm } from "./decimal";
-import { dec, int, isIntegerExact, isRational, mk } from "./exact";
+import { dec, int, mk } from "./exact";
 import * as op from "./ops";
 import type { Env } from "./ops";
 import type { Ast } from "./parse";
@@ -141,9 +141,3 @@ function regression(s: EvalScope): { a: number; b: number } {
   if (a === undefined || b === undefined) throw new CalcError("STAT", "no regression");
   return { a, b };
 }
-
-/** Is the value an integer (exactly or as a decimal)? */
-export const isIntegral = (v: Value): boolean => (v.exact ? isIntegerExact(v.exact) : Number.isInteger(v.re));
-
-/** Is the value a non-integer rational with an exact form? */
-export const isFraction = (v: Value): boolean => !!v.exact && isRational(v.exact) && v.exact.d !== 1n;

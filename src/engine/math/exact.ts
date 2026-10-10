@@ -124,12 +124,8 @@ export function mk(n: bigint, d: bigint = 1n, root: bigint = 1n, pi = false): Va
 
 export const int = (n: bigint | number): Value => mk(BigInt(n));
 
-export const isZero = (v: Value): boolean => v.re === 0;
 export const isRational = (e: Exact): boolean => e.root === 1n && !e.pi;
 export const isIntegerExact = (e: Exact): boolean => isRational(e) && e.d === 1n;
-
-/** The exact form, if the value has one. */
-export const ex = (v: Value): Exact | undefined => v.exact;
 
 /** Can this exact value be shown as an exact result (fraction, a√b/c, aπ/c)? */
 export function displayable(e: Exact): boolean {
