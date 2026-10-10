@@ -19,8 +19,12 @@
  *   whatever follows each enclosing template. The templates themselves and their other slots stay.
  * - The unit of a U n/d template holds one digit when the template was inserted before the number
  *   (TG p.59). Typing into a unit is therefore accepted only while it is empty or as an overwrite.
- * - ▲ / ▼ from a unit, or from a slot with no stacked partner, return null (history), as GB p.13
- *   pastes into a numerator or unit by reaching history with ▲.
+ * - ► enters a template at the start of its first slot; ◄ enters it at the end of its last slot
+ *   (the denominator, the radicand). ► at the end of a numerator or denominator leaves the fraction;
+ *   only side-by-side slots chain (unit → fraction, index → radicand). ◄ / ► do not wrap.
+ * - ▲ / ▼ land at the end of the other slot. From a unit, or from a slot with no stacked partner,
+ *   they return null (history), as GB p.13 pastes into a numerator or unit by reaching history with ▲.
+ * - % and ×10ⁿ pressed first also insert Ans (see keymap.ts).
  * - Nesting counts every template level (fractions, roots, powers, ×10ⁿ); a key that would make a
  *   5th level is ignored, as is any edit that would take the entry past 80 cells (cellCount).
  * - "exit" cursor style wins over "insert": at the end of a slot nothing can be overwritten.
