@@ -141,15 +141,21 @@ function drawArrow(bm: Bitmap, key: "▶" | "◀", x: number, top: number, box: 
   bm.glyph(glyph("big", key), x, top + box.axis - 3);
 }
 
-/** Draw a cursor block, underscore or exit block at a caret (D §7). */
+/**
+ * Draw the cursor's "on" blink phase over a glyph box (D §7): a solid block; an underscore on the
+ * box's bottom row (the character under it is hidden during this phase, as the block hides it,
+ * so the underscore stays visible under glyphs like 2 whose bottom row is lit; SPEC: assumption);
+ * or the exit cursor, a block with a white ">" (GED handout).
+ */
 export function drawCursor(bm: Bitmap, r: { x: number; y: number; w: number; h: number }, style: HomeScreen["cursorStyle"]): void {
   if (style === "insert") {
+    bm.rect(r, "clear");
     bm.rect({ x: r.x, y: r.y + r.h - 1, w: r.w, h: 1 }, "fill");
     return;
   }
   bm.rect(r, "fill");
   if (style === "exit") {
-    // a white ">" inside the block (GED handout); rows 1…h−2, widest in the middle
+    // rows 1…h−2 of the chevron, its point in the middle row
     for (let row = 1; row <= r.h - 2; row++) bm.set(r.x + Math.min(row, r.h - 1 - row), r.y + row, false);
   }
 }
