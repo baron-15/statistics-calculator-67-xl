@@ -52,7 +52,6 @@ type TextItem = Extract<DrawItem, { t: "text" }>;
 type RectItem = Extract<DrawItem, { t: "rect" }>;
 type MathItem = Extract<DrawItem, { t: "math" }>;
 
-
 /** Split canvas text into its glyph cells, as the renderer does (`R◂▸P` is 3 cells, `x̄=` 2). */
 export function cells(text: string): string[] {
   const out: string[] = [];

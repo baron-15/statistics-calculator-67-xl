@@ -18,7 +18,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { view } from "../../src/engine";
-import { entry, highlighted, homeText, indicators, last, lines, MODE, run, screenLines } from "./helpers";
+import { entry, highlighted, homeText, indicators, last, lines, lit, MODE, run, screenLines } from "./helpers";
 
 const lastN = (s: Parameters<typeof homeText>[0], n: number) => lines(s).slice(-n);
 
@@ -623,6 +623,8 @@ describe("TG p.29–48: history, editing, basic operations", () => {
     const blank = view(s).screen;
     expect(blank.kind === "home" && blank.firstShown).toBe(3);
     expect(indicators(s)).toContain("up");
+    // the block cursor at the top left of the blank screen (its "on" blink phase)
+    expect([lit(s, 1, 0, true), lit(s, 5, 6, true), lit(s, 1, 0, false)]).toEqual([true, true, false]);
     s = run("UP UP UP", s);
     expect(s.app).toMatchObject({ kind: "home", selected: { line: 1, part: "result" } });
   });

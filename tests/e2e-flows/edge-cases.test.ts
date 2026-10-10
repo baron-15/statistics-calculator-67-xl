@@ -339,3 +339,10 @@ describe("reset (K §3.11)", () => {
     expect(s.apps.lists).toEqual([[], [], []]);
   });
 });
+
+describe("open questions: no TI evidence settles these (SPEC: assumption in the engine)", () => {
+  it.todo("↓ after enter: 48 captures light it (GS_mem05, GS_order01), others in the same situation do not (GS_mem03, GS_scroll04); the engine never lights it after enter, so captures.test.ts does not compare ↓ on Home");
+  it.todo("long-entry scrolling: the engine keeps the smallest scroll that shows the cursor, so ◀ from the end scrolls back at once; whether the TI window sticks until the cursor reaches its edge is undocumented");
+  it.todo("◂▸ with no history at all: the engine types 0◂▸ into the entry; the guidebook never shows it");
+  it.todo("a cut history entry: the eGuide captures draw ▶ in cell 15 (MF_StAngle08/09, followed here), the older TG p.77 screen shows 16 characters and no ▶");
+});
