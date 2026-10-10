@@ -5,7 +5,8 @@
  *
  * ▲ ▼ move the highlight and wrap (▲ on item 1 goes to the last item, TG p.119, GB-078c); ◄ ►
  * switch tabs (wrapping); a number key 1–9 selects its item at once; enter selects the highlighted
- * item; clear returns to the screen the menu came from. Selecting a paste item inserts its text at
+ * item; clear returns to the screen the menu came from. Keys that open a screen (data, table, mode,
+ * 2nd stat, …) leave the menu for that screen (GB-079d presses data on the results screen). Selecting a paste item inserts its text at
  * the cursor of that screen's entry (K §3.1).
  */
 import type { Action } from "../keys";
@@ -19,7 +20,7 @@ import { symText } from "../../display/symbols";
 import { answerRow } from "../math";
 import { formatPlain, glyphCount } from "./format";
 import { setFormula, setList, withLists, type Formulas, type Lists } from "./lists";
-import { homeApp, openMenu, pasteInto } from "./nav";
+import { homeApp, openApp, openMenu, pasteInto } from "./nav";
 import { resetMemory } from "./reset";
 import { startWizard } from "./stat";
 import type { AppState, MenuId } from "./types";
@@ -179,8 +180,15 @@ export function menuKey(s: CalcState, a: Action): CalcState {
     }
     case "ENTER": return run(app.item);
     case "CLEAR": return { ...s, app: app.back };
+    // data again inside the data editor's menus goes back to the editor
+    case "DATA":
+      if (app.id === "dataMenu" || app.id === "listNames") return { ...s, app: app.back };
+      break;
     default: break;
   }
+  // an app key leaves the menu for that screen (GB-079d: `[data]` from the results screen)
+  const opened = openApp({ ...s, app: app.back }, a, app.back);
+  if (opened) return opened;
   if (/^[1-9]$/.test(a)) {
     const i = Number(a) - 1;
     return i < n ? run(i) : s;

@@ -5,7 +5,9 @@
  * exact list values so fractions stay exact), and recomputed whenever a list changes (GB-089e). A
  * formula must name a list other than its own (FORMULA), and the lists it names must have equal
  * lengths (DIM MISMATCH).
- * Any change to the data removes the StatVars results until stats are recalculated (TG p.83).
+ * StatVars stay available after the data changes (SPEC: assumption): TG p.83 says they go until stats
+ * are recalculated, but GB-078b's screen (MF_stats2var03) still lists 3:StatVars after the lists were
+ * cleared and re-entered, and the captures are the display truth (SPEC decision 1).
  */
 import type { Row, SymId } from "../expr";
 import { evaluateListFormula, type Value } from "../math";
@@ -62,10 +64,10 @@ export function recompute(s: CalcState, lists: Lists, formulas: Formulas): Lists
   return out;
 }
 
-/** Store new lists (and formulas), recompute formula lists, and drop the StatVars results. */
+/** Store new lists (and formulas) and recompute the formula lists. */
 export function withLists(s: CalcState, lists: Lists, formulas: Formulas = s.apps.formulas): CalcState {
   const next = recompute(s, lists, formulas);
-  return { ...s, apps: { ...s.apps, lists: next, formulas, stat: null } };
+  return { ...s, apps: { ...s.apps, lists: next, formulas } };
 }
 
 export const replaceAt = <T,>(xs: readonly T[], i: number, v: T): T[] => xs.map((x, k) => (k === i ? v : x));
