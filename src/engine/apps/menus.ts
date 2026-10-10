@@ -16,7 +16,8 @@ import { VARS, ZERO } from "./calc";
 import { menuItems, scrollTop, type MenuLine } from "./canvas";
 import { startFormula } from "./data";
 import { symText } from "../../display/symbols";
-import { formatPlain, glyphCount, valueRow } from "./format";
+import { answerRow } from "../math";
+import { formatPlain, glyphCount } from "./format";
 import { setFormula, setList, withLists, type Formulas, type Lists } from "./lists";
 import { homeApp, openMenu, pasteInto } from "./nav";
 import { resetMemory } from "./reset";
@@ -55,7 +56,7 @@ function tabsOf(s: CalcState, id: MenuId): Tab[] {
         title: "Recall Var",
         items: VARS.map((v): Item => ({
           line: { label: `${symText(v)}=${formatPlain(s.vars[v], s.modes, 11)}` },
-          run: (st, b) => pasteInto(st, b, valueRow(st.vars[v], st.modes)),
+          run: (st, b) => pasteInto(st, b, answerRow(st.vars[v], st.modes)),
         })),
       }];
     case "clearVar":

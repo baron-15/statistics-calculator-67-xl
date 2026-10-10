@@ -151,7 +151,7 @@ export function dataView(s: CalcState): CanvasScreen {
       const i = app.top + r;
       const y = r * 6;
       const v = list[i];
-      if (v) items.push(menuText(COL_X(c), y, formatPlain(v, s.modes, 6, "E")));
+      if (v) items.push(menuText(COL_X(c), y, formatPlain(v, s.modes, 6)));
       else if (i === list.length) items.push(menuText(COL_X(c), y, END_OF_LIST));
     }
   }
@@ -176,7 +176,7 @@ export function dataView(s: CalcState): CanvasScreen {
       screen.cursor = authorCursor(vx, app.edit);
     } else {
       const v = s.apps.lists[app.col]?.[app.row];
-      if (v) author.push(menuText(vx, AUTHOR_Y, formatPlain(v, s.modes, 12, "E")));
+      if (v) author.push(menuText(vx, AUTHOR_Y, formatPlain(v, s.modes, 12)));
     }
   }
   screen.items.push(...author);

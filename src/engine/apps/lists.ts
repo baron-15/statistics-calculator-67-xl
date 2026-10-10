@@ -1,18 +1,16 @@
 /**
  * The three data lists and their formulas (K §3.4; M §5.1; TG p.79).
  *
- * A formula list is computed element by element: each `L1`/`L2`/`L3` in the formula is replaced by
- * that list's element (as a parenthesised value) and the row is evaluated. It is recomputed whenever
- * a list changes (GB-089e). A formula must name a list other than its own (FORMULA), and the lists
- * it names must have equal lengths (DIM MISMATCH).
+ * A formula list is computed element by element by the math engine (evaluateListFormula, with the
+ * exact list values so fractions stay exact), and recomputed whenever a list changes (GB-089e). A
+ * formula must name a list other than its own (FORMULA), and the lists it names must have equal
+ * lengths (DIM MISMATCH).
  * Any change to the data removes the StatVars results until stats are recalculated (TG p.83).
  */
-import { CalcError } from "../errors";
 import type { Row, SymId } from "../expr";
-import type { Value } from "../math";
+import { evaluateListFormula, type Value } from "../math";
 import type { CalcState } from "../state";
-import { evalRow, substitute } from "./calc";
-import { operandRow } from "./format";
+import { evalContext } from "./calc";
 
 export const MAX_LIST = 42;
 
@@ -40,22 +38,8 @@ export function listRefs(formula: Row): number[] {
 
 /** The values of formula list `col`. Throws CalcError (FORMULA, DIM MISMATCH, or an evaluation error). */
 export function formulaValues(s: CalcState, lists: Lists, col: number, formula: Row): Value[] {
-  const refs = listRefs(formula);
-  if (refs.length === 0 || refs.includes(col)) throw new CalcError("FORMULA");
-  const lens = refs.map((i) => lists[i]?.length ?? 0);
-  const n = lens[0] ?? 0;
-  if (lens.some((l) => l !== n)) throw new CalcError("DIM MISMATCH");
-  const ctxState: CalcState = { ...s, apps: { ...s.apps, lists } };
-  const out: Value[] = [];
-  for (let i = 0; i < Math.min(n, MAX_LIST); i++) {
-    const row = substitute(formula, (sid) => {
-      const k = LIST_SYMS.indexOf(sid);
-      const v = k >= 0 ? lists[k]?.[i] : undefined;
-      return v ? operandRow(v) : null;
-    });
-    out.push(evalRow(ctxState, row).value);
-  }
-  return out;
+  const { ctx } = evalContext(s, { lists });
+  return evaluateListFormula(formula, ctx, col as 0 | 1 | 2).slice(0, MAX_LIST);
 }
 
 /**

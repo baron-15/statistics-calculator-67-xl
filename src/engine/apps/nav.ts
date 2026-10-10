@@ -5,10 +5,10 @@
 import { emptyEditor, isEmpty, pasteRow, type EditContext, type EditorState } from "../editor";
 import type { ErrorKind } from "../errors";
 import type { Row } from "../expr";
+import { answerRow } from "../math";
 import type { Action } from "../keys";
 import type { CalcState } from "../state";
 import { cloneRows, endOf } from "./util";
-import { valueRow } from "./format";
 import type { AppState, HomeApp, MenuId } from "./types";
 
 export const homeApp = (extra: Partial<HomeApp> = {}): HomeApp => ({ kind: "home", selected: null, ...extra });
@@ -28,7 +28,7 @@ export function showError(s: CalcState, error: ErrorKind, back: AppState): CalcS
 
 /** The previous answer as the editor pastes it before a conversion or ◂▸ (K §4.4). */
 export function lastAnswerRow(s: CalcState): Row {
-  return valueRow(s.ans, s.modes);
+  return answerRow(s.ans, s.modes);
 }
 
 /** Does this screen edit in MathPrint (2-D templates)? Data, table setup and Ask-x lines are linear. */

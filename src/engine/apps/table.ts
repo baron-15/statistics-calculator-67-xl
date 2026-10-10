@@ -18,10 +18,10 @@ import { clearAction, cursorStyle, editKey, emptyEditor, type EditorState } from
 import { CalcError } from "../errors";
 import type { SymId } from "../expr";
 import type { Action } from "../keys";
-import type { Value } from "../math";
+import { evalFunctionAt, type Value } from "../math";
 import type { CanvasScreen, DrawItem } from "../screen";
 import type { CalcState } from "../state";
-import { containsSym, evalRow } from "./calc";
+import { containsSym, evalContext, evalRow } from "./calc";
 import { bigText, cursorBox, fill, invert, math, menuText, rowAscent } from "./canvas";
 import { authorCursor } from "./data";
 import { decimalRow, formatPlain, linearText, rationalRow } from "./format";
@@ -170,7 +170,7 @@ const gcd = (a: bigint, b: bigint): bigint => (b === 0n ? a || 1n : gcd(b, a % b
 /** y for a given x, or null if the function fails there. */
 export function tableY(s: CalcState, x: Value): Value | null {
   if (!s.apps.table.func.length) return null;
-  const r = tryCalc(() => evalRow(s, s.apps.table.func, { vars: { x } }).value);
+  const r = tryCalc(() => evalFunctionAt(s.apps.table.func, x, evalContext(s).ctx));
   return r.ok ? r.value : null;
 }
 
@@ -240,9 +240,9 @@ export function tableView(s: CalcState): CanvasScreen {
     const x = rowX(s, app.first + r);
     if (!x) continue;
     const y = 6 + 6 * r;
-    items.push(menuText(0, y, formatPlain(x, s.modes, 7, "E")));
+    items.push(menuText(0, y, formatPlain(x, s.modes, 7)));
     const v = tableY(s, x);
-    items.push(menuText(38, y, v ? formatPlain(v, s.modes, 11, "E") : s.apps.table.func.length ? "Error" : ""));
+    items.push(menuText(38, y, v ? formatPlain(v, s.modes, 11) : s.apps.table.func.length ? "Error" : ""));
   }
   items.push(invert(0, 6 + 6 * app.sel, 35, 6));
   items.push(fill(36, 0, 1, 24), fill(0, 24, 96, 1));
@@ -252,7 +252,7 @@ export function tableView(s: CalcState): CanvasScreen {
     screen.cursor = authorCursor(2 * 5, app.edit, 26);
   } else {
     const x = rowX(s, app.first + app.sel);
-    items.push(menuText(0, 26, "ẋ=" + (x ? formatPlain(x, s.modes, 12, "E") : "")));
+    items.push(menuText(0, 26, "ẋ=" + (x ? formatPlain(x, s.modes, 12) : "")));
   }
   return screen;
 }

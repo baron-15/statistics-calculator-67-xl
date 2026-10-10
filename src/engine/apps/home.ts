@@ -21,10 +21,9 @@ import { cellCount, clearAction, cursorStyle, editKey, emptyEditor, isEmpty, pas
 import { isCalcError, type ErrorKind } from "../errors";
 import { sym, type Row } from "../expr";
 import type { Action } from "../keys";
-import { formatResult, toggleForm } from "../math";
 import type { HistoryLine, Screen } from "../screen";
 import type { CalcState } from "../state";
-import { evalRow, seedFrom, splitStore } from "./calc";
+import { evalEntry } from "./calc";
 import { constantScreen } from "./constant";
 import { editContext, homeApp, lastAnswerRow, openApp, showError } from "./nav";
 import type { HistoryRecord, HomeApp, Selection } from "./types";
@@ -145,33 +144,31 @@ function enter(s: CalcState): CalcState {
 const atEnd = (s: CalcState): CalcState => ({ ...s, editor: { ...s.editor, cursor: endOf(s.editor.row), varCycle: null } });
 
 /**
- * Evaluate `entry` and push it to history. A trailing `→x` stores the value (`→rand` seeds rand);
- * a trailing ◂▸ shows the alternate form (K §4.16).
+ * Evaluate `entry` (the math engine's enter pipeline) and push it to history. A trailing `→x` stores
+ * the value, `→rand` seeds rand (K §3.8, §3.2); a trailing ◂▸ shows the alternate form (K §4.16),
+ * the marker staying in the entry as typed.
  */
 export function evaluateEntry(s: CalcState, entry: Row): CalcState {
-  const { expr: stored, target } = splitStore(entry);
-  let expr = stored;
-  const tail = expr.at(-1);
-  const toggle = tail?.t === "sym" && tail.s === "toggle";
-  if (toggle) expr = expr.slice(0, -1);
-  const r = tryCalc(() => {
-    const { value, seed } = evalRow(s, expr);
-    const randSeed = target === "rand" ? seedFrom(value) : seed;
-    return { value, randSeed };
-  });
+  const r = tryCalc(() => evalEntry(s, entry));
   if (!r.ok) return showError(atEnd(s), r.error, homeApp());
-  const { value, randSeed } = r.value;
-  const vars = target && target !== "rand" ? { ...s.vars, [target]: value } : s.vars;
-  const shown = formatResult(value, s.modes);
-  const result = toggle ? (toggleForm(value, shown, s.modes) ?? shown) : shown;
-  return pushRecord({ ...s, ans: value, vars, randSeed, editor: emptyEditor() }, { entry, value, result });
+  const { r: res, seed } = r.value;
+  const store = res.store;
+  const vars = store && store !== "rand" ? { ...s.vars, [store]: res.value } : s.vars;
+  const randSeed = store === "rand" ? res.value.re : seed;
+  return pushRecord({ ...s, ans: res.value, vars, randSeed, editor: emptyEditor() }, { entry, value: res.value, result: res.result });
 }
 
-/** ◂▸ right after a result: a new line `<answer>◂▸` with the alternate form (K §4.16, GB-017b). */
+/**
+ * ◂▸ right after a result: a new line `<answer>◂▸` with the alternate form, no enter needed
+ * (K §4.16, GB-017b, GB-068b `0.7853981633975◂▸` → π/4). It is evaluated as that entry, so Ans
+ * takes the alternate value and repeated presses keep toggling.
+ */
 function toggleLine(s: CalcState): CalcState {
-  const last = s.history.at(-1) as HistoryRecord;
-  const result = toggleForm(s.ans, last.result, s.modes) ?? last.result;
-  return pushRecord({ ...s, editor: emptyEditor() }, { entry: lastAnswerRow(s), value: s.ans, result, toggled: true });
+  const answer = lastAnswerRow(s);
+  const r = tryCalc(() => evalEntry(s, [...answer, sym("toggle")]));
+  if (!r.ok) return showError(s, r.error, homeApp());
+  const { value, result } = r.value.r;
+  return pushRecord({ ...s, ans: value, editor: emptyEditor() }, { entry: answer, value, result, toggled: true });
 }
 
 export function pushRecord(s: CalcState, rec: HistoryRecord): CalcState {
