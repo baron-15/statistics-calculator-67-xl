@@ -218,7 +218,6 @@ describe("the ◂▸ toggle after a result (K §4.16)", () => {
   const fresh = (ans: number) => ({
     ...withHistory([[row("2", "add", "3"), row("5")]]),
     ans: { re: ans, exact: { n: BigInt(ans), d: 1n, root: 1n, pi: false } },
-    app: { kind: "home" as const, selected: null, fresh: true },
   });
 
   it("right after a result it adds a history line `<answer>◂▸` without enter", () => {
@@ -233,10 +232,16 @@ describe("the ◂▸ toggle after a result (K §4.16)", () => {
     expect(run("TOGGLE TOGGLE", fresh(5)).history).toHaveLength(3);
   });
 
-  it("after any other key it is inserted in the entry instead", () => {
+  it("on an empty entry it acts on the last result even after other keys (TG-43b: mode … clear ◂▸)", () => {
     const s = run("1 CLEAR TOGGLE", fresh(5));
+    expect(s.history).toHaveLength(2);
+    expect(homeText(s)[1]).toBe("5◂▸ = 5");
+  });
+
+  it("inside an entry it is typed, for enter to evaluate (GB-044)", () => {
+    const s = run("1 + TOGGLE", fresh(5));
     expect(s.history).toHaveLength(1);
-    expect(entryText(s)).toBe("5◂▸");
+    expect(entryText(s)).toBe("1+◂▸");
   });
 });
 

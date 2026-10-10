@@ -61,7 +61,7 @@ export function getEditor(s: CalcState, app: AppState): EditorState | null {
 /** Store an edited editor back into its screen (and make that screen current). */
 export function setEditor(s: CalcState, app: AppState, ed: EditorState): CalcState {
   switch (app.kind) {
-    case "home": return { ...s, editor: ed, app: { ...app, selected: null, fresh: false } };
+    case "home": return { ...s, editor: ed, app: { ...app, selected: null } };
     case "constant": return { ...s, app: { ...app, editor: ed } };
     case "data": return { ...s, app: app.formula ? { ...app, formula: ed } : { ...app, edit: ed } };
     case "tableFunc": return { ...s, app: { ...app, editor: ed } };
