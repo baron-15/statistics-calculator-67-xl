@@ -49,3 +49,5 @@ export function toggleForm(v: Value, current: Row, modes: Modes): Row | null {
   void v; void current; void modes;
   return null;
 }
+
+export { oneVarStats, twoVarStats, type StatItem, type StatResults } from "./stats";
