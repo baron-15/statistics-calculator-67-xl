@@ -1,6 +1,6 @@
 /**
  * Layout of an expression Row into a box of pixels, in MathPrint (2-D) or Classic (linear) form.
- * All rules are measured from the TI-SmartView captures (D §5; tests/display/golden.test.ts).
+ * All rules are measured from the TI-SmartView captures (D §5; tests/display/golden-home.test.ts).
  *
  * Box model. Every box has a width (a multiple of the 6-px cell), a height, an `axis` row and a
  * `pad` (blank rows at its bottom that tall delimiters ignore). A row aligns its items on the axis:
@@ -24,12 +24,8 @@ import type { Bitmap } from "./bitmap";
 import { FONTS, glyph, tokens } from "./fonts";
 import { classicText, symText } from "./symbols";
 
+/** The font of a row: big on the main line, small in fraction parts and scripts, tiny below that. */
 export type LevelFont = "big" | "small" | "tinyMP";
-
-interface Level {
-  font: LevelFont;
-  inFrac: boolean;
-}
 
 /** Where the cursor sits: the origin of its glyph cell, in the font of the row it is in. */
 export interface Caret {
@@ -64,19 +60,17 @@ interface Item {
   sup?: Box;
   supFont?: LevelFont;
   base?: Box;
-  font: LevelFont;
 }
-
-const BIG: Level = { font: "big", inFrac: false };
 
 const fa = (f: LevelFont): number => FONTS[f].axis;
 
-const fracLevel = (lv: Level): Level => ({ font: lv.font === "big" ? "small" : lv.font, inFrac: true });
-/** ^ and ×10ⁿ templates: small under big text, and small again under small text (2^3^2, MF_x10n02). */
-const scriptLevel = (lv: Level): Level => (lv.font === "big" ? { font: "small", inFrac: lv.inFrac } : lv);
-/** The one-character ² and ⁻¹: small under big text, tiny under small text (E4 `5²` in a numerator). */
-const charScriptLevel = (lv: Level): Level => ({ font: lv.font === "big" ? "small" : "tinyMP", inFrac: lv.inFrac });
-const indexLevel = (lv: Level): Level => ({ font: lv.font === "big" ? "small" : "tinyMP", inFrac: lv.inFrac });
+/**
+ * Fraction parts, and ^ and ×10ⁿ templates: small under big text, and the same font below that
+ * (2^3^2 stacks small on small; MF_x10n02 keeps a ×10ⁿ exponent small inside a fraction).
+ */
+const partFont = (f: LevelFont): LevelFont => (f === "big" ? "small" : f);
+/** The one-character ² and ⁻¹, and a root index: small under big text, tiny under small text (E4). */
+const smallerFont = (f: LevelFont): LevelFont => (f === "big" ? "small" : "tinyMP");
 
 function glyphBox(font: LevelFont, key: string): Box {
   const g = glyph(font, key);
@@ -124,17 +118,16 @@ function align(boxes: Box[], font: LevelFont): Aligned {
   return { axis, h: axis + down, pad, tops: boxes.map((b) => axis - b.axis) };
 }
 
-function pushNode(items: Item[], n: Node, k: number, lv: Level, path: CursorStep[] | null, ctx: Ctx): void {
-  const font = lv.font;
+function pushNode(items: Item[], n: Node, k: number, font: LevelFont, path: CursorStep[] | null, ctx: Ctx): void {
   const pushText = (text: string) => {
     for (const t of tokens(text)) {
       const kind: Kind = t === "(" ? "open" : t === ")" ? "close" : "glyph";
-      items.push({ kind, node: k, box: glyphBox(font, t), font });
+      items.push({ kind, node: k, box: glyphBox(font, t) });
     }
   };
-  const pushScript = (exp: Row, p: CursorStep[] | null, sl = scriptLevel(lv)) => {
-    const sup = rowBox(exp, sl, p, true, ctx);
-    items.push({ kind: "pow", node: k, box: sup, sup, supFont: sl.font, font });
+  const pushScript = (exp: Row, p: CursorStep[] | null, supFont = partFont(font)) => {
+    const sup = rowBox(exp, supFont, p, true, ctx);
+    items.push({ kind: "pow", node: k, box: sup, sup, supFont });
   };
   if (!ctx.mp) {
     pushText(classicText(n));
@@ -142,24 +135,24 @@ function pushNode(items: Item[], n: Node, k: number, lv: Level, path: CursorStep
   }
   switch (n.t) {
     case "sym":
-      if (n.s === "square") pushScript([sym("2")], null, charScriptLevel(lv));
-      else if (n.s === "recip") pushScript([sym("neg"), sym("1")], null, charScriptLevel(lv));
+      if (n.s === "square") pushScript([sym("2")], null, smallerFont(font));
+      else if (n.s === "recip") pushScript([sym("neg"), sym("1")], null, smallerFont(font));
       else pushText(symText(n.s));
       return;
     case "frac":
-      items.push({ kind: "box", node: k, box: fracBox(n.num, n.den, lv, child(path, k, "num"), child(path, k, "den"), ctx), font });
+      items.push({ kind: "box", node: k, box: fracBox(n.num, n.den, font, child(path, k, "num"), child(path, k, "den"), ctx) });
       return;
     case "mixed": {
-      const whole = rowBox(n.whole, lv, child(path, k, "whole"), true, ctx);
-      const f = fracBox(n.num, n.den, lv, child(path, k, "num"), child(path, k, "den"), ctx);
-      items.push({ kind: "box", node: k, box: hbox([whole, f], font), font });
+      const whole = rowBox(n.whole, font, child(path, k, "whole"), true, ctx);
+      const f = fracBox(n.num, n.den, font, child(path, k, "num"), child(path, k, "den"), ctx);
+      items.push({ kind: "box", node: k, box: hbox([whole, f], font) });
       return;
     }
     case "sqrt":
-      items.push({ kind: "box", node: k, box: radical(null, n.rad, lv, null, child(path, k, "rad"), ctx), font });
+      items.push({ kind: "box", node: k, box: radical(null, n.rad, font, null, child(path, k, "rad"), ctx) });
       return;
     case "root":
-      items.push({ kind: "box", node: k, box: radical(n.index, n.rad, lv, child(path, k, "index"), child(path, k, "rad"), ctx), font });
+      items.push({ kind: "box", node: k, box: radical(n.index, n.rad, font, child(path, k, "index"), child(path, k, "rad"), ctx) });
       return;
     case "pow":
       pushScript(n.exp, child(path, k, "exp"));
@@ -193,10 +186,10 @@ function hbox(boxes: Box[], font: LevelFont): Box {
   };
 }
 
-function fracBox(num: Row, den: Row, lv: Level, pN: CursorStep[] | null, pD: CursorStep[] | null, ctx: Ctx): Box {
-  const fl = fracLevel(lv);
-  const N = rowBox(num, fl, pN, true, ctx);
-  const D = rowBox(den, fl, pD, true, ctx);
+function fracBox(num: Row, den: Row, font: LevelFont, pN: CursorStep[] | null, pD: CursorStep[] | null, ctx: Ctx): Box {
+  const ff = partFont(font);
+  const N = rowBox(num, ff, pN, true, ctx);
+  const D = rowBox(den, ff, pD, true, ctx);
   const w = Math.max(N.w, D.w);
   const nx = (w - N.w) / 2;
   const dx = (w - D.w) / 2;
@@ -214,10 +207,10 @@ function fracBox(num: Row, den: Row, lv: Level, pN: CursorStep[] | null, pD: Cur
 }
 
 /** √ (index null) or ˣ√ with the index top-aligned with the vinculum (D §5.4). */
-function radical(index: Row | null, rad: Row, lv: Level, pI: CursorStep[] | null, pR: CursorStep[] | null, ctx: Ctx): Box {
-  const I = index ? rowBox(index, indexLevel(lv), pI, true, ctx) : null;
-  const R = rowBox(rad, lv, pR, true, ctx);
-  const top = 2 + (lv.font === "big" && rad.some(isScript) ? 2 : 0);
+function radical(index: Row | null, rad: Row, font: LevelFont, pI: CursorStep[] | null, pR: CursorStep[] | null, ctx: Ctx): Box {
+  const I = index ? rowBox(index, smallerFont(font), pI, true, ctx) : null;
+  const R = rowBox(rad, font, pR, true, ctx);
+  const top = 2 + (font === "big" && rad.some(isScript) ? 2 : 0);
   const ix = I ? I.w : 0;
   const rh = top + R.h;
   const w = ix + 6 + R.w;
@@ -242,16 +235,16 @@ function radical(index: Row | null, rad: Row, lv: Level, pI: CursorStep[] | null
  * Lay out one row. `slot` rows (template parts) are at least one cell wide, so an empty slot has
  * room for the cursor; a row holding the cursor at its end gets an extra cell for it (`3+3█`).
  */
-function rowBox(row: Row, lv: Level, path: CursorStep[] | null, slot: boolean, ctx: Ctx): Box {
+function rowBox(row: Row, font: LevelFont, path: CursorStep[] | null, slot: boolean, ctx: Ctx): Box {
   const items: Item[] = [];
-  row.forEach((n, k) => pushNode(items, n, k, lv, path, ctx));
+  row.forEach((n, k) => pushNode(items, n, k, font, path, ctx));
   const cur = ctx.cursor && path && samePath(ctx.cursor.path, path) ? ctx.cursor : null;
   if ((row.length === 0 && slot) || (cur && cur.index >= row.length)) {
-    items.push({ kind: "glyph", node: row.length, box: glyphBox(lv.font, " "), font: lv.font });
+    items.push({ kind: "glyph", node: row.length, box: glyphBox(font, " ") });
   }
 
   // Scripts hang from the item before them; parentheses stretch around their content.
-  const phantom = glyphBox(lv.font, " ");
+  const phantom = glyphBox(font, " ");
   const opens: number[] = [];
   let lastClose = -1;
   // Stretch the open paren `o` and close paren `c` (either may be missing: an unclosed "sin(" spans
@@ -259,7 +252,7 @@ function rowBox(row: Row, lv: Level, path: CursorStep[] | null, slot: boolean, c
   const stretch = (o: Item | undefined, c: Item | undefined, from: number, to: number) => {
     const inner = items.slice(from, to).map((it) => it.box);
     if (!inner.length) return;
-    const f = FONTS[lv.font];
+    const f = FONTS[font];
     const up = Math.max(...inner.map((b) => b.axis));
     const down = Math.max(...inner.map((b) => b.h - b.pad - b.axis));
     if (up <= f.axis && down <= f.height - f.axis) return;
@@ -286,9 +279,9 @@ function rowBox(row: Row, lv: Level, path: CursorStep[] | null, slot: boolean, c
   for (let o = opens.pop(); o !== undefined; o = opens.pop()) stretch(items[o], undefined, o + 1, items.length);
 
   const boxes = items.map((it) => it.box);
-  const a = align(boxes, lv.font);
+  const a = align(boxes, font);
   const plain = items.filter((it) => it.kind !== "pow").map((it) => it.box.axis);
-  const lift = Math.max(0, a.axis - Math.max(fa(lv.font), ...plain));
+  const lift = Math.max(0, a.axis - Math.max(fa(font), ...plain));
   const xs: number[] = [];
   let w = 0;
   for (const b of boxes) {
@@ -299,7 +292,7 @@ function rowBox(row: Row, lv: Level, path: CursorStep[] | null, slot: boolean, c
   let caret: Caret | undefined;
   if (cur) {
     const i = items.findIndex((it) => it.node >= cur.index);
-    caret = { x: i < 0 ? w : (xs[i] ?? w), y: a.axis - fa(lv.font), font: lv.font };
+    caret = { x: i < 0 ? w : (xs[i] ?? w), y: a.axis - fa(font), font };
   } else {
     boxes.forEach((b, i) => {
       if (b.caret) caret = { x: b.caret.x + (xs[i] ?? 0), y: b.caret.y + (a.tops[i] ?? 0), font: b.caret.font };
@@ -316,7 +309,7 @@ function rowBox(row: Row, lv: Level, path: CursorStep[] | null, slot: boolean, c
 
 /** Lay out a top-level row (home-screen entry or result, or a canvas math item) in the big font. */
 export function layoutTop(row: Row, mathprint: boolean, cursor: Cursor | null = null): Box {
-  return rowBox(row, BIG, [], false, { mp: mathprint, cursor });
+  return rowBox(row, "big", [], false, { mp: mathprint, cursor });
 }
 
 export interface RowMetrics {
