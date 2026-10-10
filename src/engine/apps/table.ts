@@ -9,8 +9,8 @@
  * 3. The table: `x` and `y` headers (menu-font variable glyphs at x 10 and 46), a rule at column 36
  *    (rows 0–23) and at row 24, three rows at y 6/12/18 (x values at x=0, y values at x=38), the
  *    selected x cell inverse over columns 0–34, and `x=<value>` at y=26 (MT_functable04). Auto scrolls without end in both
- *    directions; Ask-x rows start empty: type x and enter computes y (the row stays selected, as
- *    in MT_functable07), delete removes a row.
+ *    directions; Ask-x rows start empty: type x and enter computes y and moves to the next line,
+ *    staying on the third (TG p.22; MT_functable07), delete removes a row.
  * clear backs up one screen (table → setup → y= → Home).
  * Cells that fail to evaluate show `Error` (SPEC: assumption).
  */
@@ -176,6 +176,21 @@ export function tableY(s: CalcState, x: Value): Value | null {
   return r.ok ? r.value : null;
 }
 
+/**
+ * An x value as its cell shows it: an exact multiple of π typed in Ask-x keeps its π form (TG p.97:
+ * "if you enter 2π, the x-value displays 2π. If you enter 2.0π, the x-value displays 6.28319"),
+ * written like the restricted contexts' fractions (`2π`, `π⁄2`); anything else as formatPlain.
+ */
+function xText(x: Value, s: CalcState, max: number): string {
+  const ex = x.exact;
+  if (ex && ex.pi && ex.root === 1n && ex.n !== 0n) {
+    const a = ex.n < 0n ? -ex.n : ex.n;
+    const text = `${ex.n < 0n ? "⁻" : ""}${a === 1n ? "" : a}π${ex.d === 1n ? "" : `⁄${ex.d}`}`;
+    if (glyphCount(text) <= max) return text;
+  }
+  return formatPlain(x, s.modes, max);
+}
+
 function rowX(s: CalcState, i: number): Value | undefined {
   const t = s.apps.table;
   return t.ask ? t.xs[i] : autoX(t, i);
@@ -232,7 +247,10 @@ function commitX(s: CalcState, app: ViewApp, ed: EditorState): CalcState {
   const t = s.apps.table;
   const idx = app.first + app.sel;
   const xs = idx < t.xs.length ? t.xs.map((v, i) => (i === idx ? r.value : v)) : [...t.xs, r.value];
-  return { ...s, apps: { ...s.apps, table: { ...t, xs } }, app: { ...app, edit: null } };
+  // the cursor moves down to the next of the three lines; on the third it stays (TG p.22
+  // "5 [enter] 6 [enter] 10 [enter]", and "to enter more values, highlight any of the three
+  // lines"; MT_functable07 shows the third row, 8, still selected)
+  return { ...s, apps: { ...s.apps, table: { ...t, xs } }, app: { ...app, sel: Math.min(2, app.sel + 1), edit: null } };
 }
 
 export function tableView(s: CalcState): CanvasScreen {
@@ -242,7 +260,7 @@ export function tableView(s: CalcState): CanvasScreen {
     const x = rowX(s, app.first + r);
     if (!x) continue;
     const y = 6 + 6 * r;
-    items.push(menuText(0, y, formatPlain(x, s.modes, 7)));
+    items.push(menuText(0, y, xText(x, s, 7)));
     const v = tableY(s, x);
     items.push(menuText(38, y, v ? formatPlain(v, s.modes, 11) : s.apps.table.func.length ? "Error" : ""));
   }
@@ -254,7 +272,7 @@ export function tableView(s: CalcState): CanvasScreen {
     screen.cursor = authorCursor(2 * 5, app.edit, 26);
   } else {
     const x = rowX(s, app.first + app.sel);
-    items.push(menuText(0, 26, "ẋ=" + (x ? formatPlain(x, s.modes, 12) : "")));
+    items.push(menuText(0, 26, "ẋ=" + (x ? xText(x, s, 12) : "")));
   }
   return screen;
 }

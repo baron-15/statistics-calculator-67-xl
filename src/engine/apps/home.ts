@@ -10,8 +10,8 @@
  *   to the entry line.
  * - clear while an item is highlighted only leaves the history (nothing is deleted, K §4.3).
  * - Any other key while browsing leaves the history and then acts on the entry.
- * - enter on an empty line repeats the last typed entry (toggle lines are skipped); with the
- *   constant on it applies K to Ans instead (TG p.67: "Ans will appear").
+ * - enter on an empty line repeats the last line, toggling a ◂▸ line again (TG-35c, TG-43c); with
+ *   the constant on it applies K to Ans instead (TG p.67: "Ans will appear").
  * - After an error, clear returns to the entry with the cursor at its end (CalcError carries no
  *   position).
  * - 2nd quit on Home also blanks the screen (K §4.7).
@@ -60,11 +60,12 @@ export function homeKey(s0: CalcState, a: Action, hyp: boolean): CalcState {
   }
   const opened = openApp(s, a, app);
   if (opened) return withCycleReset(opened);
-  const fresh = !!app.fresh;
   switch (a) {
     case "ENTER": return enter(s);
     case "TOGGLE":
-      if (fresh && isEmpty(s.editor) && s.history.length > 0) return toggleLine(s);
+      // on an empty entry ◂▸ acts on the last result at once, also after other keys (TG-43b:
+      // mode … [clear] [◂▸] adds 16π◂▸ = 50); inside an entry it is typed (GB-044)
+      if (isEmpty(s.editor) && s.history.length > 0) return toggleLine(s);
       break;
     case "CLEAR":
       if (clearAction(s.editor) === "was-empty") {
@@ -121,15 +122,19 @@ function browseKey(s: CalcState, a: Action, sel: NonNullable<Selection>): CalcSt
   }
 }
 
-/** enter: evaluate the entry (with K appended when constant mode is on), or repeat the last one. */
+/**
+ * enter: evaluate the entry (with K appended when constant mode is on), or repeat the last line.
+ * A repeated ◂▸ line is toggled again (TG-35c: FIX 0 [clear] [enter] re-runs √3◂▸ → 2; TG-43c).
+ */
 function enter(s: CalcState): CalcState {
   const k = s.apps.constant?.on ? s.apps.constant.row : null;
   let entry = s.editor.row;
   if (entry.length === 0) {
     if (k) entry = [sym("ans")];
     else {
-      const last = [...s.history].reverse().find((h) => !h.toggled);
+      const last = s.history.at(-1);
       if (!last) return s;
+      if (last.toggled) return toggleLine(s, cloneRows(last.entry));
       entry = last.entry;
     }
   }
@@ -159,12 +164,12 @@ export function evaluateEntry(s: CalcState, entry: Row): CalcState {
 }
 
 /**
- * ◂▸ right after a result: a new line `<answer>◂▸` with the alternate form, no enter needed
+ * ◂▸ on an empty entry: a new line `<answer>◂▸` with the alternate form, no enter needed
  * (K §4.16, GB-017b, GB-068b `0.7853981633975◂▸` → π/4). It is evaluated as that entry, so Ans
- * takes the alternate value and repeated presses keep toggling.
+ * takes the alternate value and repeated presses keep toggling. `answer` is the last answer, or the
+ * entry of a ◂▸ line that enter repeats.
  */
-function toggleLine(s: CalcState): CalcState {
-  const answer = lastAnswerRow(s);
+function toggleLine(s: CalcState, answer: Row = lastAnswerRow(s)): CalcState {
   const r = tryCalc(() => evalEntry(s, [...answer, sym("toggle")]));
   if (!r.ok) return showError(s, r.error, homeApp());
   const { value, result } = r.value.r;
@@ -179,7 +184,7 @@ export function pushRecord(s: CalcState, rec: HistoryRecord): CalcState {
     history = history.slice(drop);
     firstShown = Math.max(0, firstShown - drop);
   }
-  return { ...s, history, firstShown, app: homeApp({ fresh: true }) };
+  return { ...s, history, firstShown, app: homeApp() };
 }
 
 export function historyLines(s: CalcState): HistoryLine[] {

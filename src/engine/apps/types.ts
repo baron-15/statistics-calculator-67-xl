@@ -21,8 +21,6 @@ export type MenuId =
 export type HomeApp = {
   kind: "home";
   selected: Selection;
-  /** the last key produced a result (◂▸ now adds a toggle line instead of editing) */
-  fresh?: boolean;
   /** the K definition is shown after saving it, until the next key (GB p.35 screens) */
   kBanner?: boolean;
 };
