@@ -181,7 +181,7 @@ export function tableY(s: CalcState, x: Value): Value | null {
  * "if you enter 2π, the x-value displays 2π. If you enter 2.0π, the x-value displays 6.28319"),
  * written like the restricted contexts' fractions (`2π`, `π⁄2`); anything else as formatPlain.
  */
-function xText(x: Value, s: CalcState, max: number): string {
+export function xText(x: Value, s: CalcState, max: number): string {
   const ex = x.exact;
   if (ex && ex.pi && ex.root === 1n && ex.n !== 0n) {
     const a = ex.n < 0n ? -ex.n : ex.n;
