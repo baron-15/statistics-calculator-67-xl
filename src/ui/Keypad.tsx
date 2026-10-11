@@ -3,19 +3,148 @@
  * (HIT_BOXES: its column, half-way to the keys around it); the visible key face inside it keeps the
  * measured box exactly. The arrow pad is one oval split into four triangular hit zones.
  */
-import { memo, useEffect, useId, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
+import {
+  memo, useEffect, useId, useRef, useState, type CSSProperties, type FocusEvent, type PointerEvent, type ReactNode, type RefObject,
+} from "react";
 import { ALL_KEYS, type KeyId, type KeySpec } from "../engine";
 import {
   DPAD, DPAD_HIT, HIT_BOXES, KEY_BOXES, LEGEND, SHAPE_RADII, cqw, pctX, pctY, type FaceKeyId, type HitBox, type KeyBox,
 } from "./geometry";
 import { KEYBOARD_HINTS } from "./keyboardMap";
+import { ARROW_SECOND, SECOND_TIPS, type LegendSecondFn } from "./keyTips";
 import { polygonPath } from "./paths";
+
+/** Hover delay before a key tip opens (tips open only when the "Key tips" switch is on). */
+export const HOVER_DELAY_MS = 350;
+/** A touch held this long shows the key's tip instead of pressing it. */
+export const LONG_PRESS_MS = 500;
+
+export interface TipRequest {
+  id: KeyId;
+  el: HTMLElement;
+  /** How the tip was opened: hover tips close on leave, touch tips close on their own, focus tips on blur. */
+  via: "hover" | "touch" | "focus";
+}
+
+/** Open a key's tip, or close it: `onTip(null, id)` closes the tip only if it is that key's (null alone closes any). */
+export type OnTip = (req: TipRequest | null, closeId?: KeyId) => void;
 
 export interface KeypadProps {
   onPress: (id: KeyId) => void;
   /** The key to animate as pressed (keyboard input); n changes on every press. */
   flash: { id: KeyId; n: number } | null;
   secondActive: boolean;
+  onTip: OnTip;
+  /** The "Key tips" switch: when off, no tip opens on hover, long-press or focus, and a long press presses the key. */
+  tipsEnabled: boolean;
+}
+
+/**
+ * Accessible description of a key's 2nd function, e.g. "2nd: quit" or "2nd: 10ˣ, Ten to the power". It is
+ * there whether or not tips are on (no native title tooltip: it would pop up over the key tip).
+ */
+export function secondDescription(spec: KeySpec): string | null {
+  if (spec.second?.label) {
+    const name = SECOND_TIPS[spec.second.fn as LegendSecondFn]?.name;
+    const label = spec.second.label;
+    return name && name.toLowerCase() !== label.toLowerCase() ? `2nd: ${label}, ${name}` : `2nd: ${label}`;
+  }
+  const jump = ARROW_SECOND[spec.id];
+  return jump ? `2nd: ${jump}` : null;
+}
+
+/**
+ * A touch held at least this long presses the key on release: mobile browsers often turn a long touch
+ * into a long-press gesture and fire no click (shorter taps press on click, as usual).
+ */
+const HOLD_PRESS_MS = 300;
+/** How long after a release a click still counts as that touch's own (and is swallowed). */
+const CLICK_AFTER_RELEASE_MS = 800;
+
+/**
+ * Tip triggers for one key: hover (mouse, after HOVER_DELAY_MS), long-press (touch or pen, after
+ * LONG_PRESS_MS; the key is then not pressed) and keyboard focus (focus-visible only). All of them are
+ * off unless tipsEnabled; with tips off a long press presses the key like a tap. onClick presses the key.
+ */
+function useKeyTriggers(id: KeyId, onPress: (id: KeyId) => void, onTip: OnTip, tipsEnabled: boolean) {
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const pressTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  /** When the current touch went down (0: no touch in progress) */
+  const touchDownAt = useRef(0);
+  /** The touch showed the tip instead of pressing the key */
+  const longPressed = useRef(false);
+  /** Swallow a click until then: the touch that caused it was already handled on release */
+  const swallowClickUntil = useRef(0);
+
+  useEffect(
+    () => () => {
+      clearTimeout(hoverTimer.current);
+      clearTimeout(pressTimer.current);
+    },
+    [],
+  );
+  // Switching tips off cancels a tip that is waiting to open.
+  useEffect(() => {
+    if (tipsEnabled) return;
+    clearTimeout(hoverTimer.current);
+    clearTimeout(pressTimer.current);
+  }, [tipsEnabled]);
+
+  return {
+    onPointerEnter(e: PointerEvent<HTMLElement>) {
+      if (e.pointerType !== "mouse" || !tipsEnabled) return;
+      const el = e.currentTarget;
+      clearTimeout(hoverTimer.current);
+      hoverTimer.current = setTimeout(() => onTip({ id, el, via: "hover" }), HOVER_DELAY_MS);
+    },
+    onPointerLeave(e: PointerEvent<HTMLElement>) {
+      clearTimeout(hoverTimer.current);
+      clearTimeout(pressTimer.current);
+      if (e.pointerType === "mouse") onTip(null, id);
+    },
+    onPointerDown(e: PointerEvent<HTMLElement>) {
+      longPressed.current = false;
+      if (e.pointerType === "mouse") return;
+      touchDownAt.current = performance.now();
+      if (!tipsEnabled) return;
+      const el = e.currentTarget;
+      clearTimeout(pressTimer.current);
+      pressTimer.current = setTimeout(() => {
+        longPressed.current = true;
+        onTip({ id, el, via: "touch" });
+      }, LONG_PRESS_MS);
+    },
+    onPointerUp(e: PointerEvent<HTMLElement>) {
+      clearTimeout(pressTimer.current);
+      if (e.pointerType === "mouse" || !touchDownAt.current) return;
+      const held = performance.now() - touchDownAt.current;
+      touchDownAt.current = 0;
+      if (longPressed.current) {
+        // The tip is showing: this touch does not press the key.
+        swallowClickUntil.current = performance.now() + CLICK_AFTER_RELEASE_MS;
+      } else if (held >= HOLD_PRESS_MS) {
+        swallowClickUntil.current = performance.now() + CLICK_AFTER_RELEASE_MS;
+        onPress(id);
+      }
+    },
+    onPointerCancel() {
+      clearTimeout(pressTimer.current);
+      touchDownAt.current = 0;
+    },
+    onFocus(e: FocusEvent<HTMLElement>) {
+      if (tipsEnabled && e.currentTarget.matches(":focus-visible")) onTip({ id, el: e.currentTarget, via: "focus" });
+    },
+    onBlur() {
+      onTip(null, id);
+    },
+    onClick() {
+      if (performance.now() < swallowClickUntil.current) {
+        swallowClickUntil.current = 0;
+        return;
+      }
+      onPress(id);
+    },
+  };
 }
 
 const ARROWS: readonly KeyId[] = ["UP", "DOWN", "LEFT", "RIGHT"];
@@ -233,16 +362,19 @@ interface KeyProps {
   flashN: number;
   pressed2nd: boolean;
   onPress: (id: KeyId) => void;
+  onTip: OnTip;
+  tipsEnabled: boolean;
 }
 
-const Key = memo(function Key({ spec, flashN, pressed2nd, onPress }: KeyProps) {
+const Key = memo(function Key({ spec, flashN, pressed2nd, onPress, onTip, tipsEnabled }: KeyProps) {
   const id = spec.id as FaceKeyId;
   const box = KEY_BOXES[id];
   const hit = HIT_BOXES[id];
   const faceRef = useRef<HTMLSpanElement>(null);
   const descId = useId();
+  const triggers = useKeyTriggers(spec.id, onPress, onTip, tipsEnabled);
   useFlash(faceRef, flashN);
-  const second = spec.second?.label ? `2nd: ${spec.second.label}` : null;
+  const second = secondDescription(spec);
   const lift = spec.kind === "digit" ? -LEGEND.digitDrop : LEGEND.wordLift;
   return (
     <div className="dv-cell" style={{ left: pctX(hit.x), top: pctY(hit.y), width: pctX(hit.w), height: pctY(hit.h) }}>
@@ -260,7 +392,7 @@ const Key = memo(function Key({ spec, flashN, pressed2nd, onPress }: KeyProps) {
         aria-keyshortcuts={KEYBOARD_HINTS[spec.id]}
         data-calc-key={spec.id}
         onContextMenu={(e) => e.preventDefault()}
-        onClick={() => onPress(spec.id)}
+        {...triggers}
       >
         <span
           ref={faceRef}
@@ -288,7 +420,65 @@ const DPAD_CLIP: Record<string, string> = {
   LEFT: "polygon(0 0, 50% 50%, 0 100%)",
 };
 
-const DPad = memo(function DPad({ onPress, flash }: { onPress: (id: KeyId) => void; flash: { id: KeyId; n: number } | null }) {
+interface ArrowProps {
+  spec: KeySpec;
+  onPress: (id: KeyId) => void;
+  onTip: OnTip;
+  tipsEnabled: boolean;
+  setHeld: (id: KeyId | null) => void;
+}
+
+/** One triangular zone of the arrow pad. */
+const ArrowButton = memo(function ArrowButton({ spec, onPress, onTip, tipsEnabled, setHeld }: ArrowProps) {
+  const descId = useId();
+  const triggers = useKeyTriggers(spec.id, onPress, onTip, tipsEnabled);
+  const second = secondDescription(spec);
+  return (
+    <>
+      {second && (
+        <span id={descId} className="sr-only">
+          {second}
+        </span>
+      )}
+      <button
+        type="button"
+        className={`dv-dpad-btn dv-dpad-btn--${spec.id.toLowerCase()}`}
+        style={{ clipPath: DPAD_CLIP[spec.id] }}
+        aria-label={spec.aria}
+        aria-describedby={second ? descId : undefined}
+        aria-keyshortcuts={KEYBOARD_HINTS[spec.id]}
+        data-calc-key={spec.id}
+        onContextMenu={(e) => e.preventDefault()}
+        {...triggers}
+        onPointerDown={(e) => {
+          setHeld(spec.id);
+          triggers.onPointerDown(e);
+        }}
+        onPointerUp={(e) => {
+          setHeld(null);
+          triggers.onPointerUp(e);
+        }}
+        onPointerLeave={(e) => {
+          setHeld(null);
+          triggers.onPointerLeave(e);
+        }}
+        onPointerCancel={() => {
+          setHeld(null);
+          triggers.onPointerCancel();
+        }}
+      />
+    </>
+  );
+});
+
+interface DPadProps {
+  onPress: (id: KeyId) => void;
+  flash: { id: KeyId; n: number } | null;
+  onTip: OnTip;
+  tipsEnabled: boolean;
+}
+
+const DPad = memo(function DPad({ onPress, flash, onTip, tipsEnabled }: DPadProps) {
   const [held, setHeld] = useState<KeyId | null>(null);
   const [flashed, setFlashed] = useState<KeyId | null>(null);
   useEffect(() => {
@@ -303,21 +493,7 @@ const DPad = memo(function DPad({ onPress, flash }: { onPress: (id: KeyId) => vo
   return (
     <div className="dv-dpad" data-pressed={active ?? undefined} style={{ left: pctX(h.x), top: pctY(h.y), width: pctX(h.w), height: pctY(h.h) }}>
       {specs.map((spec) => (
-        <button
-          key={spec.id}
-          type="button"
-          className={`dv-dpad-btn dv-dpad-btn--${spec.id.toLowerCase()}`}
-          style={{ clipPath: DPAD_CLIP[spec.id] }}
-          aria-label={spec.aria}
-          aria-keyshortcuts={KEYBOARD_HINTS[spec.id]}
-          data-calc-key={spec.id}
-          onPointerDown={() => setHeld(spec.id)}
-          onPointerUp={() => setHeld(null)}
-          onPointerLeave={() => setHeld(null)}
-          onPointerCancel={() => setHeld(null)}
-          onContextMenu={(e) => e.preventDefault()}
-          onClick={() => onPress(spec.id)}
-        />
+        <ArrowButton key={spec.id} spec={spec} onPress={onPress} onTip={onTip} tipsEnabled={tipsEnabled} setHeld={setHeld} />
       ))}
       {/* after the buttons, so a focused button can highlight its arrow (device.css) */}
       <svg className="dv-dpad-art" viewBox={`${h.x} ${h.y} ${h.w} ${h.h}`} aria-hidden="true" focusable="false">
@@ -348,13 +524,21 @@ const DPad = memo(function DPad({ onPress, flash }: { onPress: (id: KeyId) => vo
   );
 });
 
-export const Keypad = memo(function Keypad({ onPress, flash, secondActive }: KeypadProps) {
+export const Keypad = memo(function Keypad({ onPress, flash, secondActive, onTip, tipsEnabled }: KeypadProps) {
   return (
     <div className="dv-keypad" role="group" aria-label="Keypad">
       {ALL_KEYS.filter((s) => !ARROWS.includes(s.id)).map((spec) => (
-        <Key key={spec.id} spec={spec} flashN={flash?.id === spec.id ? flash.n : 0} pressed2nd={spec.id === "2ND" && secondActive} onPress={onPress} />
+        <Key
+          key={spec.id}
+          spec={spec}
+          flashN={flash?.id === spec.id ? flash.n : 0}
+          pressed2nd={spec.id === "2ND" && secondActive}
+          onPress={onPress}
+          onTip={onTip}
+          tipsEnabled={tipsEnabled}
+        />
       ))}
-      <DPad onPress={onPress} flash={flash} />
+      <DPad onPress={onPress} flash={flash} onTip={onTip} tipsEnabled={tipsEnabled} />
     </div>
   );
 });

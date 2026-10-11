@@ -365,10 +365,133 @@
   fill: #f5c451;
 }
 
+/* ---- Key tip (page colours, so it follows the light and dark themes) ---- */
+
+.dv-tip {
+  position: absolute;
+  z-index: 30;
+  box-sizing: border-box;
+  padding: 10px 12px 11px;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  background: var(--panel-bg);
+  color: var(--page-fg);
+  box-shadow:
+    0 12px 28px -8px rgba(0, 0, 0, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.15);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.4;
+  text-align: left;
+  pointer-events: none;
+  animation: dv-tip-in 120ms ease-out;
+}
+.dv-tip-arrow {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  transform: rotate(45deg);
+}
+.dv-tip.is-above .dv-tip-arrow {
+  bottom: -6px;
+  border-top: 0;
+  border-left: 0;
+}
+.dv-tip.is-below .dv-tip-arrow {
+  top: -6px;
+  border-bottom: 0;
+  border-right: 0;
+}
+.dv-tip-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+/* The key's legend, in the key's own colours */
+.dv-tip-key {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+.dv-tip-key--blue {
+  background: #415e6d;
+  color: #f1f4f5;
+}
+.dv-tip-key--dark {
+  background: #403e3f;
+  color: #f3f3f3;
+}
+.dv-tip-key--white,
+.dv-tip-key--ring {
+  background: #dcdcda;
+  color: #111;
+}
+.dv-tip-key--ring {
+  box-shadow: inset 0 0 0 1.5px #3a3a3c;
+}
+.dv-tip-key--green,
+.dv-tip-key--second {
+  background: #8dbb3f;
+  color: #0f1d05;
+}
+.dv-tip-name {
+  font-weight: 600;
+}
+.dv-tip-name--second {
+  color: var(--second-ink);
+}
+.dv-tip-does {
+  margin: 0;
+}
+.dv-tip-ex {
+  margin: 5px 0 0;
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--page-fg) 7%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.dv-tip-second {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--panel-border);
+}
+.dv-tip-kbd {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+.dv-tip-kbd kbd {
+  color: var(--page-fg);
+  font-size: 10.5px;
+}
+
+@keyframes dv-tip-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dv-face,
   .dv-dpad-top,
   .dv-arrow {
     transition: none;
+  }
+  .dv-tip {
+    animation: none;
   }
 }
