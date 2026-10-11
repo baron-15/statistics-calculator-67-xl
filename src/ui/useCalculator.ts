@@ -1,11 +1,14 @@
 /**
  * The emulator's state: a reducer over the engine's pure `press`, continuous memory in localStorage,
- * a cursor blink timer, and the rendered LCD frame.
+ * a cursor blink timer, and the rendered LCD frame. The reducer also notes which feature block each
+ * press switches to (panels/featureContext.ts), so on-screen keys and the keyboard both drive it,
+ * and presses batched into one render each count.
  */
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { press, view, type CalcState, type KeyId, type View } from "../engine";
 import { renderView, type Frame } from "../display/render";
 import { MATRIX_H, MATRIX_W } from "../display/metrics";
+import { featureTrigger, type FeatureId } from "./panels/featureContext";
 import { loadState, saveState } from "./persist";
 
 /** Cursor blink half-period: about 2 Hz (250 ms on, 250 ms off). The real rate is [unverified]. */
@@ -51,17 +54,46 @@ function hasCursor(v: View): boolean {
 
 type Action = { type: "press"; key: KeyId };
 
-const reducer = (s: CalcState, a: Action): CalcState => safePress(s, a.key);
+/** The latest press that switched the feature block; `seq` counts them, so a repeat is a new trigger. */
+export interface FeatureTrigger {
+  feature: FeatureId;
+  seq: number;
+}
+
+interface Store {
+  state: CalcState;
+  trigger: FeatureTrigger | null;
+}
+
+function safeTrigger(before: CalcState, key: KeyId, after: CalcState): FeatureId | null {
+  try {
+    return featureTrigger(before, key, after);
+  } catch (e) {
+    console.error("featureTrigger() threw", e);
+    return null;
+  }
+}
+
+export function reducer(st: Store, a: Action): Store {
+  const next = safePress(st.state, a.key);
+  if (next === st.state) return st;
+  const feature = safeTrigger(st.state, a.key, next);
+  return { state: next, trigger: feature ? { feature, seq: (st.trigger?.seq ?? 0) + 1 } : st.trigger };
+}
+
+const initStore = (): Store => ({ state: loadState(), trigger: null });
 
 export interface UseCalculator {
   state: CalcState;
   view: View;
   frame: Frame;
   pressKey: (key: KeyId) => void;
+  /** the latest press that switched the feature block (null until one does) */
+  trigger: FeatureTrigger | null;
 }
 
 export function useCalculator(): UseCalculator {
-  const [state, dispatch] = useReducer(reducer, undefined, loadState);
+  const [{ state, trigger }, dispatch] = useReducer(reducer, undefined, initStore);
   const v = useMemo(() => safeView(state), [state]);
   const blinking = hasCursor(v);
   const [blinkOn, setBlinkOn] = useState(true);
@@ -109,5 +141,5 @@ export function useCalculator(): UseCalculator {
   }, [flush]);
 
   const pressKey = useCallback((key: KeyId) => dispatch({ type: "press", key }), []);
-  return { state, view: v, frame, pressKey };
+  return { state, view: v, frame, pressKey, trigger };
 }

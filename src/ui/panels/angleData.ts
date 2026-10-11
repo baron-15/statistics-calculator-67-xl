@@ -2,7 +2,7 @@
  * Data for the Angles & trig block. It explains one angle, chosen in this order from the entry being
  * typed (or the newest history entry that uses an angle feature):
  *   the argument of the first sin / cos / tan · the result of an inverse trig function ·
- *   the θ of a polar↔rectangular conversion · an angle written with ° ′ ″ ʳ ᵍ · a ▸DMS conversion;
+ *   the θ of a polar↔rectangular conversion · an angle written with ° ′ ″ ʳ ᵍ · a ►DMS conversion;
  * otherwise Ans, read as an angle in the current mode.
  * The angle is converted to DEG, RAD, GRAD and D°M′S″, and sin, cos and tan of it are evaluated, all by
  * the engine (unit modifiers, exact values at multiples of 15°), so the text matches the LCD.
@@ -90,7 +90,7 @@ function locate(s: CalcState): { found: Found | null; source: "entry" | "history
   }
   if (src.parsed.conv === "toDMS") {
     const theta = ev(src.parsed.expr);
-    return { ...meta, found: theta && { theta, what: "the angle converted with ▸DMS", point: null } };
+    return { ...meta, found: theta && { theta, what: "the angle converted with ►DMS", point: null } };
   }
   return { ...meta, found: null };
 }

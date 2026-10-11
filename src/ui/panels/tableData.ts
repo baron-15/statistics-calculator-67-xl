@@ -83,9 +83,7 @@ export function tableBlockView(s: CalcState, count = TABLE_ROWS, samples = PLOT_
   const viewing = app.kind === "tableView" ? app : null;
   const hasFunc = t.func.length > 0;
 
-  const indexes: number[] = t.ask
-    ? t.xs.map((_, i) => i)
-    : Array.from({ length: count }, (_, i) => (viewing ? viewing.first : 0) + i);
+  const indexes: number[] = t.ask ? t.xs.map((_, i) => i) : Array.from({ length: count }, (_, i) => (viewing ? viewing.first : 0) + i);
   const rows = indexes.map((index): TableRowView => {
     const x: Value = t.ask ? t.xs[index]! : autoX(t, index);
     const v = hasFunc ? tableY(st, x) : null;

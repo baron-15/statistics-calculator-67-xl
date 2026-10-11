@@ -2,8 +2,8 @@
  * Data for the Fractions & answer forms block: the last answer (Ans) in every form the calculator can
  * switch it to, with the engine's own formatting and recognition:
  * - as shown: the Home result form in the current modes;
- * - fraction a/b and mixed number U n/d (exact rationals, or a decimal that f◂▸d would convert);
- * - decimal (◂▸ / f◂▸d), percent (▸%), the exact √ or π form when one matches all 13 digits;
+ * - fraction a/b and mixed number U n/d (exact rationals, or a decimal that f◄►d would convert);
+ * - decimal (◄► / f◄►d), percent (►%), the exact √ or π form when one matches all 13 digits;
  * - the 13-digit value Ans keeps.
  */
 import type { CalcState } from "../../engine";
@@ -48,7 +48,7 @@ const text = (fn: () => string): string | null => {
   }
 };
 
-/** The exact rational of a value: its own, or the fraction f◂▸d finds for a decimal (d ≤ 1000). */
+/** The exact rational of a value: its own, or the fraction f◄►d finds for a decimal (d ≤ 1000). */
 export function rationalOf(v: Value): Exact | null {
   const e = v.exact;
   if (e) return isRational(e) ? e : null;
@@ -57,7 +57,7 @@ export function rationalOf(v: Value): Exact | null {
   return r?.exact && isRational(r.exact) ? r.exact : null;
 }
 
-/** The exact √ or π form of a value: its own, or the one ◂▸ finds in MathPrint. */
+/** The exact √ or π form of a value: its own, or the one ◄► finds in MathPrint. */
 export function irrationalOf(v: Value): Exact | null {
   const e = v.exact;
   if (e) return e.root !== 1n || e.pi ? e : null;
@@ -71,18 +71,55 @@ export function answerForms(ans: Value, modes: Modes): AnswerForm[] {
   const add = (id: AnswerForm["id"], label: string, t: string | null, keys: string) => {
     if (t) forms.push({ id, label, text: t, keys });
   };
-  add("shown", "As shown", text(() => readableRow(formatResult(ans, modes))), "enter");
+  add(
+    "shown",
+    "As shown",
+    text(() => readableRow(formatResult(ans, modes))),
+    "enter",
+  );
   const q = rationalOf(ans);
   if (q && q.d !== 1n) {
-    add("fraction", "Fraction", text(() => readableRow(exactRow(q, MP))), "2nd f◂▸d");
+    add(
+      "fraction",
+      "Fraction",
+      text(() => readableRow(exactRow(q, MP))),
+      "2nd f◄►d",
+    );
     const a = q.n < 0n ? -q.n : q.n;
-    if (a > q.d) add("mixed", "Mixed number", text(() => readableRow(exactRow(q, MP, true))), "2nd n/d◂▸Un/d");
+    if (a > q.d)
+      add(
+        "mixed",
+        "Mixed number",
+        text(() => readableRow(exactRow(q, MP, true))),
+        "2nd n/d◄►Un/d",
+      );
   }
   const irr = irrationalOf(ans);
-  if (irr) add("exact", modes.display === "CLASSIC" ? "Exact (MathPrint)" : "Exact", text(() => readableRow(exactRow(irr, MP))), "◂▸");
-  add("decimal", "Decimal", text(() => readableRow(decimalRow(ans.re, modes))), q || irr ? "◂▸ or 2nd f◂▸d" : "◂▸");
-  add("percent", "Percent", text(() => readableRow(formatResult({ ...ans, form: "percent" }, modes))), "2nd ▸%");
-  add("stored", "Ans holds", text(() => readableRow(answerRow({ re: ans.re }, modes))), "2nd ans");
+  if (irr)
+    add(
+      "exact",
+      modes.display === "CLASSIC" ? "Exact (MathPrint)" : "Exact",
+      text(() => readableRow(exactRow(irr, MP))),
+      "◄►",
+    );
+  add(
+    "decimal",
+    "Decimal",
+    text(() => readableRow(decimalRow(ans.re, modes))),
+    q || irr ? "◄► or 2nd f◄►d" : "◄►",
+  );
+  add(
+    "percent",
+    "Percent",
+    text(() => readableRow(formatResult({ ...ans, form: "percent" }, modes))),
+    "2nd ►%",
+  );
+  add(
+    "stored",
+    "Ans holds",
+    text(() => readableRow(answerRow({ re: ans.re }, modes))),
+    "2nd ans",
+  );
   // an integer's decimal reads exactly like "As shown"
   const shown = forms[0]?.text;
   return forms.filter((f) => f.id !== "decimal" || f.text !== shown);

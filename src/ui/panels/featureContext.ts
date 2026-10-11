@@ -128,7 +128,22 @@ export function featureTrigger(before: CalcState, key: KeyId, after: CalcState):
 const FRACTION_SYMS: ReadonlySet<SymId> = new Set<SymId>(["fracbar", "mixsep", "toFD", "toFracMixed", "percent", "toPercent", "toggle"]);
 const PROBABILITY_SYMS: ReadonlySet<SymId> = new Set<SymId>(["nPr", "nCr", "fact", "rand", "randint"]);
 const ANGLE_SYMS: ReadonlySet<SymId> = new Set<SymId>([
-  "sin", "cos", "tan", "asin", "acos", "atan", "deg", "min", "sec", "radian", "grad", "toDMS", "RPr", "RPth", "PRx", "PRy",
+  "sin",
+  "cos",
+  "tan",
+  "asin",
+  "acos",
+  "atan",
+  "deg",
+  "min",
+  "sec",
+  "radian",
+  "grad",
+  "toDMS",
+  "RPr",
+  "RPth",
+  "PRx",
+  "PRy",
 ]);
 
 function visit(row: Row, fn: (n: Node) => void): void {

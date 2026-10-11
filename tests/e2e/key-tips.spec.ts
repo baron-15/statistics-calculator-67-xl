@@ -93,7 +93,8 @@ test.describe("desktop", () => {
 
   test("turning the switch off closes an open tip; keyboard focus opens one", async ({ page }) => {
     await tipsSwitch(page).click();
-    // Tab from the switch: the theme toggle, then the first key (2nd).
+    // Tab from the switch: Calculator only, the theme toggle, then the first key (2nd).
+    await page.keyboard.press("Tab");
     await page.keyboard.press("Tab");
     await page.keyboard.press("Tab");
     await expect(key(page, "2ND")).toBeFocused();

@@ -53,9 +53,7 @@ export function listsView(s: CalcState): ListsView {
 // ------------------------------------------------------------------------------------------------
 // setup and results
 
-export type StatSetup =
-  | { kind: "1-Var"; data: number; freq: number | null }
-  | { kind: "2-Var"; x: number; y: number };
+export type StatSetup = { kind: "1-Var"; data: number; freq: number | null } | { kind: "2-Var"; x: number; y: number };
 
 /** The lists named by a results title: `1-Var:L1,One`, `1-Var:L1,L2`, `2-Var:L1,L2`. */
 export function parseStatTitle(title: string): StatSetup | null {

@@ -14,8 +14,20 @@ import { formatPlain, linearText } from "../../engine/apps/format";
 export const MINUS = "−";
 
 const SUPERSCRIPT: Readonly<Record<string, string>> = {
-  "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹",
-  "−": "⁻", "-": "⁻", "⁻": "⁻", "+": "⁺",
+  "0": "⁰",
+  "1": "¹",
+  "2": "²",
+  "3": "³",
+  "4": "⁴",
+  "5": "⁵",
+  "6": "⁶",
+  "7": "⁷",
+  "8": "⁸",
+  "9": "⁹",
+  "−": "⁻",
+  "-": "⁻",
+  "⁻": "⁻",
+  "+": "⁺",
 };
 
 /** Superscript digits and signs, or null when the text has other characters. */
@@ -57,9 +69,12 @@ function balanced(text: string): boolean {
 
 function nodeText(n: Node): string {
   switch (n.t) {
-    case "sym": return symText(n.s);
-    case "frac": return `${group(readableRow(n.num))}/${group(readableRow(n.den))}`;
-    case "mixed": return `${readableRow(n.whole)} ${group(readableRow(n.num))}/${group(readableRow(n.den))}`;
+    case "sym":
+      return symText(n.s);
+    case "frac":
+      return `${group(readableRow(n.num))}/${group(readableRow(n.den))}`;
+    case "mixed":
+      return `${readableRow(n.whole)} ${group(readableRow(n.num))}/${group(readableRow(n.den))}`;
     case "pow": {
       const exp = readableRow(n.exp);
       return superscript(exp) ?? `^${exp.length > 1 ? `(${exp})` : exp}`;
@@ -80,12 +95,18 @@ function nodeText(n: Node): string {
   }
 }
 
+/**
+ * The LCD's small arrowheads ◂ ▸ (◂▸, ▸DMS, R▸P) are tiny in most text fonts: the panels use the
+ * full-size ◄ ►, as TI's own documents do.
+ */
+export const arrows = (text: string): string => text.replace(/◂/g, "◄").replace(/▸/g, "►");
+
 /** An expression or result row as one readable line. Falls back to the engine's rowText. */
 export function readableRow(row: Row): string {
   try {
-    return row.map(nodeText).join("").replace(/\s+/g, " ").trim();
+    return arrows(row.map(nodeText).join("").replace(/\s+/g, " ").trim());
   } catch {
-    return rowText(row);
+    return arrows(rowText(row));
   }
 }
 
@@ -106,7 +127,10 @@ export function readableNumber(text: string): string {
  * it (`9/5×L1+32`), with a true minus sign and "/" for the fraction bar.
  */
 export function linearReadable(row: Row): string {
-  return linearText(row).replace(/⁻/g, MINUS).replace(/⁄/g, "/").replace(/[ẋẏż]/g, (c) => ({ ẋ: "x", ẏ: "y", ż: "z" })[c] ?? c);
+  return linearText(row)
+    .replace(/⁻/g, MINUS)
+    .replace(/⁄/g, "/")
+    .replace(/[ẋẏż]/g, (c) => ({ ẋ: "x", ẏ: "y", ż: "z" })[c] ?? c);
 }
 
 /** A value as the restricted contexts show it (StatVars, data editor, table) in at most `width` characters. */

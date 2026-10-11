@@ -28,6 +28,14 @@
   --current: #fbf1d6;
   /* Green used for 2nd function names on page surfaces (the device prints its 2nd legends green) */
   --second-ink: #3d6b12;
+  /* Chart series (validated pair: blue for data, orange for fitted lines and projections) */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-grid: #ece8df;
+  --chart-axis: #b4ad9f;
+  --chart-track: #ece8df;
+  /* The calculator column on desktop: the device's own width rule (src/ui/device.css .dv-shell) */
+  --calc-col: max(320px, min(540px, calc((100dvh - 7.5rem) / 2.2063)));
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -42,6 +50,11 @@
     --subtle: #24272c;
     --current: #3a3220;
     --second-ink: #9fd15c;
+    --chart-1: #3987e5;
+    --chart-2: #d95926;
+    --chart-grid: #2c3036;
+    --chart-axis: #565c64;
+    --chart-track: #2c3036;
     color-scheme: dark;
   }
 }
@@ -56,6 +69,11 @@
   --subtle: #24272c;
   --current: #3a3220;
   --second-ink: #9fd15c;
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-grid: #2c3036;
+  --chart-axis: #565c64;
+  --chart-track: #2c3036;
   color-scheme: dark;
 }
 
@@ -121,9 +139,10 @@ body {
   }
   .panel-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
-    gap: 0.75rem;
+    column-gap: 0.75rem;
     margin: 0 -0.5rem;
     padding: 0.2rem 0.5rem;
     border-radius: 0.375rem;
@@ -266,6 +285,320 @@ body {
   }
   .tape-token.is-pending {
     border-style: dashed;
+  }
+
+  /* ---- Page layout: calculator + side panels ---- */
+  .layout-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    max-width: 84rem;
+    margin-inline: auto;
+  }
+  @media (min-width: 1024px) {
+    .layout-split {
+      grid-template-columns: var(--calc-col) minmax(0, 1fr);
+      column-gap: 1.75rem;
+      align-items: start;
+    }
+    .layout-calc {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      align-self: start;
+    }
+    .layout-panels {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    .layout-hint {
+      grid-column: 2;
+      grid-row: 2;
+    }
+  }
+
+  /* ---- Panel pieces ---- */
+  .panel-scroll {
+    max-height: 16rem;
+    margin: 0 -0.5rem;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .panel-scroll-tall {
+    max-height: 26rem;
+  }
+  .panel-scroll thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--panel-bg);
+  }
+  .panel-table th,
+  .panel-table td {
+    vertical-align: top;
+  }
+  .panel-table.is-compact {
+    width: auto;
+    min-width: min(100%, 22rem);
+  }
+  .panel-table.is-compact th,
+  .panel-table.is-compact td {
+    padding-inline: 0.75rem;
+  }
+  .panel-table tr.is-lcd > :first-child {
+    box-shadow: inset 3px 0 0 var(--chart-1);
+  }
+  .panel-table tr.is-current > :first-child {
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  .panel-table .is-cell-current .num {
+    display: inline-block;
+    min-width: 1.5rem;
+  }
+  .panel-results {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.75rem;
+  }
+  .panel-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.75rem;
+  }
+  .panel-row dd {
+    margin-left: auto;
+  }
+  .panel-var {
+    font-family: "STIX Two Text", Georgia, serif;
+    font-size: 1.0625rem;
+    font-weight: 500;
+  }
+  .panel-warning {
+    margin: 0.25rem 0;
+    padding: 0.375rem 0.5rem;
+    border-radius: 0.375rem;
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--gold-ink);
+    font-size: 0.8125rem;
+  }
+  .panel-note-current {
+    margin: 0 -0.5rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.375rem;
+    background: var(--current);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  .panel-equation {
+    font-size: 1rem;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+  }
+  .panel-equation .num {
+    white-space: normal;
+  }
+
+  /* The feature block's segmented selector */
+  .seg {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--panel-border);
+    border-radius: 0.5rem;
+    background: var(--subtle);
+  }
+  .seg-item {
+    min-height: 1.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .seg-item:hover {
+    color: var(--page-fg);
+  }
+  .seg-item[aria-checked="true"] {
+    background: var(--panel-bg);
+    color: var(--page-fg);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.14);
+  }
+  .seg-item:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  .seg-dot {
+    display: inline-block;
+    width: 0.375rem;
+    height: 0.375rem;
+    margin-left: 0.3rem;
+    border-radius: 50%;
+    background: var(--accent);
+    vertical-align: 0.1rem;
+  }
+
+  /* Mode block: options as chips, the current one inverse like the LCD */
+  .mode-row {
+    align-items: center;
+  }
+  .mode-chip {
+    padding: 0 0.25rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    color: var(--muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.75rem;
+    line-height: 1.45;
+  }
+  .mode-chip.is-selected {
+    background: var(--page-fg);
+    color: var(--page-bg);
+  }
+  .mode-chip.is-cursor {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+
+  /* History block */
+  .history {
+    max-height: 18rem;
+    margin: 0 -0.5rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .history-item {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.125rem 1rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+  }
+  .history-item + .history-item {
+    border-top: 1px solid var(--panel-border);
+  }
+  .history-item.is-current {
+    background: var(--current);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  .history-entry {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .history-result {
+    margin-left: auto;
+    font-weight: 600;
+  }
+
+  /* ---- Charts (inline SVG) ---- */
+  .chart {
+    margin: 0.25rem 0 0;
+  }
+  .chart-box {
+    width: 100%;
+    overflow: hidden;
+  }
+  .chart svg {
+    display: block;
+    max-width: 100%;
+  }
+  .chart text {
+    fill: var(--muted);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+  .chart-caption {
+    margin-top: 0.25rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+  .chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+  }
+  .chart-key-dot,
+  .chart-key-line {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .chart-key-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--chart-1);
+  }
+  .chart-key-line {
+    width: 1rem;
+    height: 2px;
+    background: var(--chart-2);
+  }
+  .chart-rule,
+  .chart-zero {
+    stroke: var(--chart-axis);
+    stroke-width: 1;
+  }
+  .chart-grid {
+    stroke: var(--chart-grid);
+    stroke-width: 1;
+  }
+  .chart-fill-1 {
+    fill: var(--chart-1);
+  }
+  .chart-dot-1 {
+    fill: var(--chart-1);
+    stroke: var(--panel-bg);
+    stroke-width: 2;
+  }
+  .chart-line-1 {
+    fill: none;
+    stroke: var(--chart-1);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .chart-line-2,
+  .chart-proj {
+    stroke: var(--chart-2);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .chart-whisker {
+    stroke: var(--chart-1);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .chart-median {
+    stroke: var(--panel-bg);
+    stroke-width: 2.5;
+  }
+  .chart-mean {
+    fill: var(--chart-2);
+    stroke: var(--panel-bg);
+    stroke-width: 1.5;
+  }
+  .chart-circle {
+    fill: none;
+    stroke: var(--chart-axis);
+    stroke-width: 1.5;
+  }
+  .chart-arc {
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 1.5;
+  }
+  .chart-track,
+  .chart-track-piece {
+    fill: var(--chart-track);
+  }
+  .chart-hit {
+    fill: transparent;
+  }
+  .chart g:hover > .chart-fill-1,
+  .chart g:hover > .chart-dot-1 {
+    opacity: 0.8;
   }
 
   .theme-toggle {

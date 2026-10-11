@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { initialState, parseScript, press, runScript, type CalcState, type KeyId } from "../../src/engine";
 import {
-  FEATURES, featureInfo, featureTrigger, featuresInUse, parseFeature, rowFeatures, screenFeature, type FeatureId,
+  FEATURES,
+  featureInfo,
+  featureTrigger,
+  featuresInUse,
+  parseFeature,
+  rowFeatures,
+  screenFeature,
+  type FeatureId,
 } from "../../src/ui/panels/featureContext";
 
 /**
@@ -121,8 +128,29 @@ describe("featureTrigger: Home-only keys", () => {
 
 describe("featureTrigger: no change", () => {
   it.each([
-    "5", "ADD", "MULTIPLY", "ENTER", "CLEAR", "DELETE", "UP", "DOWN", "LEFT", "RIGHT", "MODE", "STO", "VAR",
-    "LOG", "LN", "SQUARE", "RECIP", "POWER", "PI", "EE", "NEG", "LPAREN", "DOT",
+    "5",
+    "ADD",
+    "MULTIPLY",
+    "ENTER",
+    "CLEAR",
+    "DELETE",
+    "UP",
+    "DOWN",
+    "LEFT",
+    "RIGHT",
+    "MODE",
+    "STO",
+    "VAR",
+    "LOG",
+    "LN",
+    "SQUARE",
+    "RECIP",
+    "POWER",
+    "PI",
+    "EE",
+    "NEG",
+    "LPAREN",
+    "DOT",
   ])("%s on Home", (key) => {
     expect(triggerOf(key, "2 ENTER")).toBeNull();
   });

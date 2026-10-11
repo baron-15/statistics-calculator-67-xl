@@ -5,7 +5,15 @@ import { angleView } from "../../src/ui/panels/angleData";
 import { answerForms, answerFormsView, fractionStrip } from "../../src/ui/panels/fractionData";
 import { fallingProduct, probabilityView } from "../../src/ui/panels/probabilityData";
 import {
-  chartData, chartSetup, histogram, listsView, niceStep, parseStatTitle, regressionText, resultsView, setupText,
+  chartData,
+  chartSetup,
+  histogram,
+  listsView,
+  niceStep,
+  parseStatTitle,
+  regressionText,
+  resultsView,
+  setupText,
 } from "../../src/ui/panels/statsData";
 import { tableBlockView } from "../../src/ui/panels/tableData";
 import { groupDigits, linearReadable, numberText, readableNumber, readableRow, superscript, valueText } from "../../src/ui/panels/text";
@@ -88,7 +96,17 @@ describe("statistics", () => {
     const r = resultsView(runScript(tg85))!;
     expect(r.kind).toBe("1-Var");
     expect(r.items.map((i) => `${i.label}=${i.text}`)).toEqual([
-      "n=5", "x̄=79.4", "Sx=16.39512123", "σx=14.66424222", "Σx=397", "Σx²=32597", "minX=53", "Q1=77", "Med=85", "Q3=85", "maxX=97",
+      "n=5",
+      "x̄=79.4",
+      "Sx=16.39512123",
+      "σx=14.66424222",
+      "Σx=397",
+      "Σx²=32597",
+      "minX=53",
+      "Q1=77",
+      "Med=85",
+      "Q3=85",
+      "maxX=97",
     ]);
     expect(r.stale).toBe(false);
     expect(r.selected).toBe(0);
@@ -100,7 +118,7 @@ describe("statistics", () => {
     expect(r.items.some((i) => i.key === "stat_xprime" || i.key === "stat_yprime")).toBe(false);
     expect(r.items.find((i) => i.key === "stat_minX")!.index).toBe(17);
     expect(r.regression).toMatchObject({ a: 0.6, b: 2.2, text: "y = 0.6x + 2.2" });
-    expect(regressionText(0.677325190, -18.6663732, MODES)).toBe("y = 0.67732519x − 18.6663732");
+    expect(regressionText(0.67732519, -18.6663732, MODES)).toBe("y = 0.67732519x − 18.6663732");
   });
 
   it("follows the StatVars highlight and notices when the lists changed afterwards", () => {
@@ -148,11 +166,25 @@ describe("statistics", () => {
   });
 
   it("bins integers one per value, other data with nice widths", () => {
-    expect(histogram([{ x: 1, f: 1 }, { x: 3, f: 2 }]).map((b) => [b.lo, b.count])).toEqual([[0.5, 1], [1.5, 0], [2.5, 2]]);
+    expect(
+      histogram([
+        { x: 1, f: 1 },
+        { x: 3, f: 2 },
+      ]).map((b) => [b.lo, b.count]),
+    ).toEqual([
+      [0.5, 1],
+      [1.5, 0],
+      [2.5, 2],
+    ]);
     const wide = histogram([53, 77, 85, 85, 97].map((x) => ({ x, f: 1 })));
     expect(wide.map((b) => b.lo)).toEqual([50, 60, 70, 80, 90]);
     expect(wide.map((b) => b.count)).toEqual([1, 0, 1, 2, 1]);
-    expect(histogram([{ x: 0.5, f: 1 }, { x: 1.5, f: 1 }]).reduce((t, b) => t + b.count, 0)).toBe(2);
+    expect(
+      histogram([
+        { x: 0.5, f: 1 },
+        { x: 1.5, f: 1 },
+      ]).reduce((t, b) => t + b.count, 0),
+    ).toBe(2);
     expect(histogram([])).toEqual([]);
     expect(niceStep(11)).toBe(10);
     expect(niceStep(0.3)).toBe(0.2);
@@ -240,7 +272,7 @@ describe("fractions and answer forms", () => {
 
   it("names the key for each form", () => {
     const keys = Object.fromEntries(answerForms({ re: 4.5, exact: { n: 9n, d: 2n, root: 1n, pi: false } }, MODES).map((f) => [f.id, f.keys]));
-    expect(keys).toMatchObject({ fraction: "2nd f◂▸d", mixed: "2nd n/d◂▸Un/d", percent: "2nd ▸%" });
+    expect(keys).toMatchObject({ fraction: "2nd f◄►d", mixed: "2nd n/d◄►Un/d", percent: "2nd ►%" });
   });
 
   it("draws a strip: whole bars plus d pieces up to 12, else a proportion", () => {
@@ -254,10 +286,19 @@ describe("fractions and answer forms", () => {
 describe("probability", () => {
   it("writes out nPr and nCr with the user's numbers", () => {
     expect(probabilityView(runScript("8 PRB 1 3 ENTER")).calc).toMatchObject({
-      kind: "nPr", expr: "8 nPr 3", formula: "8!/(8−3)!", steps: "8×7×6", result: "336", chance: "1 in 336",
+      kind: "nPr",
+      expr: "8 nPr 3",
+      formula: "8!/(8−3)!",
+      steps: "8×7×6",
+      result: "336",
+      chance: "1 in 336",
     });
     expect(probabilityView(runScript("52 PRB 2 5")).calc).toMatchObject({
-      kind: "nCr", formula: "52!/(5!·47!)", steps: "(52×51×50×49×48)/(5×4×3×2×1)", result: "2598960", chance: "1 in 2,598,960",
+      kind: "nCr",
+      formula: "52!/(5!·47!)",
+      steps: "(52×51×50×49×48)/(5×4×3×2×1)",
+      result: "2598960",
+      chance: "1 in 2,598,960",
     });
   });
 
