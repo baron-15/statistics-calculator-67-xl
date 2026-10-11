@@ -1,0 +1,497 @@
+/*
+ * Device skin. Geometry comes from geometry.ts (measured on TI's render); sizes here are device units:
+ * --u = 1/824 of the device width, so the device scales as one piece. Colours are sampled from the
+ * render and fixed: the device looks the same in light and dark page themes.
+ */
+
+.dv-shell {
+  container-type: inline-size;
+  position: relative;
+  /* Real proportions (824 × 1818); as large as fits the viewport height, 320–540 px wide. */
+  width: min(100%, max(320px, min(540px, calc((100dvh - 7.5rem) / 2.2063))));
+  margin-inline: auto;
+}
+/* Phones: the full column width (the page scrolls). */
+@media (max-width: 640px) {
+  .dv-shell {
+    width: min(100%, 480px);
+  }
+}
+
+.dv-device {
+  --u: calc(100cqw / 824);
+  position: relative;
+  width: 100%;
+  aspect-ratio: 824 / 1818;
+  filter: drop-shadow(0 calc(var(--u) * 10) calc(var(--u) * 16) rgba(0, 0, 0, 0.32));
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  font-family: "Source Sans 3 Variable", "Source Sans 3", "Myriad Pro", "Segoe UI", system-ui, sans-serif;
+}
+
+.dv-case {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+/* ---- LCD ---- */
+
+.dv-lcd {
+  position: absolute;
+  pointer-events: none;
+}
+.dv-matrix,
+.dv-ind {
+  position: absolute;
+  display: block;
+}
+.dv-ind {
+  overflow: visible;
+  /* unlit segments ghost faintly, as on the real glass */
+  color: rgba(60, 66, 90, 0.03);
+}
+.dv-ind text {
+  font-family: "Source Sans 3 Variable", "Source Sans 3", sans-serif;
+  font-style: italic;
+  font-weight: 650;
+  stroke: none;
+}
+.dv-lcd.is-off .dv-ind {
+  visibility: hidden;
+}
+
+/* ---- Keypad ---- */
+
+.dv-keypad {
+  position: absolute;
+  inset: 0;
+}
+
+/* The cell is the hit area; the visible key is .dv-face inside it. */
+.dv-cell {
+  position: absolute;
+}
+
+.dv-key {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  font: inherit;
+  color: inherit;
+}
+.dv-key:focus {
+  outline: none;
+}
+
+.dv-face {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: filter 80ms ease-out;
+}
+
+.dv-legend {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+.dv-legend sup {
+  position: relative;
+  top: -0.62em;
+  margin-left: 0.04em;
+  line-height: 0;
+  vertical-align: baseline;
+  font-weight: 700;
+}
+
+/* Blue function keys: face #405c6a, a lit rim along the top (#7896a6), a dark outline round the
+   sides and bottom (#0b1d29 core), and a soft shadow below (#2c4350 fading over 16 units). */
+.dv-key--blue .dv-face {
+  color: #e5e8e9;
+  background: linear-gradient(180deg, #4d6a7a 0%, #415e6d 16%, #3f5b6a 62%, #3c5867 84%, #2f4856 100%);
+  box-shadow:
+    inset 0 calc(var(--u) * 2.6) calc(var(--u) * 1.6) calc(var(--u) * -0.8) rgba(176, 204, 218, 0.72),
+    inset 0 calc(var(--u) * -3.5) calc(var(--u) * 2.6) rgba(0, 12, 20, 0.62),
+    inset 0 0 0 calc(var(--u) * 1.3) rgba(4, 18, 27, 0.6),
+    0 calc(var(--u) * 5) calc(var(--u) * 7) rgba(12, 28, 38, 0.5);
+}
+/* 2nd: green #5a8f1b, lit top #9dc54a, darker bottom #4d7b18 and rim #122b15. */
+.dv-key--green .dv-face {
+  color: #0b1404;
+  background: linear-gradient(180deg, #8dbb3f 0%, #66a020 12%, #5a8f1b 45%, #57871b 75%, #4a7618 100%);
+  box-shadow:
+    inset 0 calc(var(--u) * 2.4) calc(var(--u) * 1.4) calc(var(--u) * -0.8) rgba(205, 235, 140, 0.7),
+    inset 0 calc(var(--u) * -3.5) calc(var(--u) * 2.6) rgba(10, 35, 0, 0.6),
+    inset 0 0 0 calc(var(--u) * 1.3) rgba(14, 40, 8, 0.6),
+    0 calc(var(--u) * 5) calc(var(--u) * 7) rgba(12, 28, 38, 0.5);
+}
+/* ÷ × − +: charcoal #403e3f with a grey lit rim (#797977) and a near-black bottom (#191919). */
+.dv-key--dark .dv-face {
+  color: #f3f3f3;
+  background: linear-gradient(180deg, #575656 0%, #444243 14%, #403e3f 60%, #3c3a3b 84%, #2c2b2b 100%);
+  box-shadow:
+    inset 0 calc(var(--u) * 2.4) calc(var(--u) * 1.4) calc(var(--u) * -0.8) rgba(170, 170, 166, 0.6),
+    inset 0 calc(var(--u) * -3.5) calc(var(--u) * 2.6) rgba(0, 0, 0, 0.6),
+    inset 0 0 0 calc(var(--u) * 1.3) rgba(10, 10, 10, 0.55),
+    0 calc(var(--u) * 5) calc(var(--u) * 7) rgba(12, 28, 38, 0.5);
+}
+/* Digit keys: #d0d0d0 tops, a bright top edge (#e8e8e6), a grey lower skirt (#c7c8ca → #9d9ea2)
+   and a dark edge where they meet the faceplate (#4d5967). */
+.dv-key--white .dv-face {
+  color: #111;
+  background: linear-gradient(180deg, #e6e6e4 0%, #dbdad8 7%, #d3d2d0 18%, #d0d0d0 50%, #cfcfcf 80%, #c6c7c9 92%, #a5a6aa 100%);
+  box-shadow:
+    inset 0 0 0 calc(var(--u) * 1) rgba(80, 90, 100, 0.35),
+    inset 0 calc(var(--u) * -2.5) calc(var(--u) * 2) rgba(60, 66, 74, 0.35),
+    0 calc(var(--u) * 1.2) 0 rgba(30, 44, 55, 0.75),
+    0 calc(var(--u) * 6) calc(var(--u) * 8) rgba(12, 28, 38, 0.5);
+}
+.dv-key--white .dv-legend {
+  font-weight: 600;
+}
+/* ◂▸ and enter: a white top (#d3d3d5) inside a thick dark rim (#424244 → #1d1d1f). */
+.dv-key--ring .dv-face {
+  color: #0d0d0d;
+  background: linear-gradient(180deg, #6a6a6c 0%, #474749 30%, #3a3a3c 70%, #1d1d1f 100%);
+  box-shadow:
+    inset 0 0 0 calc(var(--u) * 1) rgba(0, 0, 0, 0.5),
+    0 calc(var(--u) * 5) calc(var(--u) * 7) rgba(12, 28, 38, 0.5);
+}
+.dv-key--ring .dv-face::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--u) * 7) calc(var(--u) * 7.5) calc(var(--u) * 10) calc(var(--u) * 7);
+  border-radius: 46% / 50%;
+  background: linear-gradient(180deg, #e2e3e2 0%, #d6d8d7 14%, #d3d3d5 60%, #cacacc 100%);
+  box-shadow: inset 0 calc(var(--u) * -1.5) calc(var(--u) * 1.5) rgba(0, 0, 0, 0.12);
+}
+.dv-key--ring .dv-legend {
+  top: calc(var(--u) * -1.5) !important;
+}
+
+/* SVG legends: text is filled, never stroked */
+.dv-symbol text {
+  stroke: none;
+}
+.dv-svg-sans {
+  font-family: "Source Sans 3 Variable", "Source Sans 3", sans-serif;
+  font-weight: 700;
+}
+.dv-svg-math,
+.dv-svg-math text {
+  font-family: "STIX Two Text", "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 500;
+}
+
+/* Italic serif math letters (x, n, π) */
+.dv-math {
+  font-family: "STIX Two Text", "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 500;
+  line-height: 0;
+}
+
+/* Stacked n over d on the n/d key: bar 20 × 1.6 between them */
+.dv-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 0.92;
+  font-weight: 700;
+}
+.dv-stack-bar {
+  width: calc(var(--u) * 20);
+  height: calc(var(--u) * 2);
+  margin: calc(var(--u) * 1.5) 0 calc(var(--u) * 0.5);
+  background: currentColor;
+}
+.dv-ee {
+  display: inline-flex;
+  align-items: baseline;
+  font-weight: 600;
+}
+.dv-var {
+  display: inline-flex;
+  align-items: center;
+}
+.dv-var-stack {
+  display: inline-flex;
+  flex-direction: column;
+  margin-left: calc(var(--u) * 1);
+  line-height: 0.9;
+}
+.dv-var-stack .dv-math {
+  line-height: 0.95;
+  letter-spacing: 0.06em;
+}
+.dv-sto {
+  display: inline-flex;
+  align-items: center;
+}
+.dv-sto-arrow {
+  width: calc(var(--u) * 21);
+  height: calc(var(--u) * 17);
+  margin-left: calc(var(--u) * 5);
+  fill: currentColor;
+}
+
+/* "(−)": the minus is a long bar (23 × 3.6 on the render) */
+.dv-neg {
+  display: inline-flex;
+  align-items: center;
+}
+.dv-neg-bar {
+  display: inline-block;
+  width: calc(var(--u) * 21);
+  height: calc(var(--u) * 3.6);
+  margin: 0 calc(var(--u) * 1.5);
+  translate: 0 calc(var(--u) * -1.5);
+  background: currentColor;
+}
+
+/* Drawn symbols (operators, caret, ◂▸, the decimal point), in device units centred on the key */
+.dv-symbol {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 0;
+}
+.dv-symbol path[fill="none"] {
+  stroke-width: 4.2;
+}
+
+/* Pressed and focus states */
+.dv-key:active .dv-face {
+  translate: 0 calc(var(--u) * 2);
+  filter: brightness(0.86);
+}
+@media (hover: hover) {
+  .dv-key:hover .dv-face {
+    filter: brightness(1.07);
+  }
+  .dv-key:active .dv-face {
+    filter: brightness(0.86);
+  }
+}
+.dv-key:focus-visible .dv-face {
+  outline: calc(var(--u) * 3) solid #f5c451;
+  outline-offset: calc(var(--u) * 3);
+}
+.dv-key--green[aria-pressed="true"] .dv-face {
+  filter: brightness(1.12) saturate(1.1);
+}
+
+/* ---- Arrow pad ---- */
+
+.dv-dpad {
+  position: absolute;
+}
+.dv-dpad-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.dv-dpad-top {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  transition: transform 70ms ease-out;
+}
+.dv-arrow {
+  fill: #1f1f20;
+  transition: fill 80ms ease-out;
+}
+.dv-dpad[data-pressed="UP"] .dv-dpad-top {
+  transform: translateY(calc(var(--u) * 1.5)) scale(0.995);
+}
+.dv-dpad[data-pressed="DOWN"] .dv-dpad-top {
+  transform: translateY(calc(var(--u) * 2.5)) scale(0.995);
+}
+.dv-dpad[data-pressed="LEFT"] .dv-dpad-top {
+  transform: translate(calc(var(--u) * 1.5), calc(var(--u) * 1.5)) scale(0.995);
+}
+.dv-dpad[data-pressed="RIGHT"] .dv-dpad-top {
+  transform: translate(calc(var(--u) * -1.5), calc(var(--u) * 1.5)) scale(0.995);
+}
+.dv-dpad[data-pressed="UP"] .dv-arrow--up,
+.dv-dpad[data-pressed="DOWN"] .dv-arrow--down,
+.dv-dpad[data-pressed="LEFT"] .dv-arrow--left,
+.dv-dpad[data-pressed="RIGHT"] .dv-arrow--right {
+  fill: #0a0a0a;
+}
+.dv-dpad-btn {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.dv-dpad-btn:focus {
+  outline: none;
+}
+.dv-dpad-btn--up:focus-visible ~ .dv-dpad-art .dv-arrow--up,
+.dv-dpad-btn--down:focus-visible ~ .dv-dpad-art .dv-arrow--down,
+.dv-dpad-btn--left:focus-visible ~ .dv-dpad-art .dv-arrow--left,
+.dv-dpad-btn--right:focus-visible ~ .dv-dpad-art .dv-arrow--right {
+  fill: #f5c451;
+}
+
+/* ---- Key tip (page colours, so it follows the light and dark themes) ---- */
+
+.dv-tip {
+  position: absolute;
+  z-index: 30;
+  box-sizing: border-box;
+  padding: 10px 12px 11px;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  background: var(--panel-bg);
+  color: var(--page-fg);
+  box-shadow:
+    0 12px 28px -8px rgba(0, 0, 0, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.15);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.4;
+  text-align: left;
+  pointer-events: none;
+  animation: dv-tip-in 120ms ease-out;
+}
+.dv-tip-arrow {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  transform: rotate(45deg);
+}
+.dv-tip.is-above .dv-tip-arrow {
+  bottom: -6px;
+  border-top: 0;
+  border-left: 0;
+}
+.dv-tip.is-below .dv-tip-arrow {
+  top: -6px;
+  border-bottom: 0;
+  border-right: 0;
+}
+.dv-tip-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+/* The key's legend, in the key's own colours */
+.dv-tip-key {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+.dv-tip-key--blue {
+  background: #415e6d;
+  color: #f1f4f5;
+}
+.dv-tip-key--dark {
+  background: #403e3f;
+  color: #f3f3f3;
+}
+.dv-tip-key--white,
+.dv-tip-key--ring {
+  background: #dcdcda;
+  color: #111;
+}
+.dv-tip-key--ring {
+  box-shadow: inset 0 0 0 1.5px #3a3a3c;
+}
+.dv-tip-key--green,
+.dv-tip-key--second {
+  background: #8dbb3f;
+  color: #0f1d05;
+}
+.dv-tip-name {
+  font-weight: 600;
+}
+.dv-tip-name--second {
+  color: var(--second-ink);
+}
+.dv-tip-does {
+  margin: 0;
+}
+.dv-tip-ex {
+  margin: 5px 0 0;
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--page-fg) 7%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.dv-tip-second {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--panel-border);
+}
+.dv-tip-kbd {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+.dv-tip-kbd kbd {
+  color: var(--page-fg);
+  font-size: 10.5px;
+}
+
+@keyframes dv-tip-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dv-face,
+  .dv-dpad-top,
+  .dv-arrow {
+    transition: none;
+  }
+  .dv-tip {
+    animation: none;
+  }
+}
