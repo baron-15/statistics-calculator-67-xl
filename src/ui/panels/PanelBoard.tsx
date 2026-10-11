@@ -1,7 +1,9 @@
 /**
  * The side area: the smart feature block first (full width), then Memory and Mode (side by side on
- * extra-large screens), then History.
+ * extra-large screens), then History. Memoized: the LCD's cursor blink re-renders the page four
+ * times a second, but the panels only change with the calculator state.
  */
+import { memo } from "react";
 import type { CalcState } from "../../engine";
 import { FeatureBlock } from "./FeatureBlock";
 import type { FeatureId } from "./featureContext";
@@ -15,7 +17,7 @@ export interface PanelBoardProps {
   onSelectFeature: (f: FeatureId) => void;
 }
 
-export function PanelBoard({ state, feature, onSelectFeature }: PanelBoardProps) {
+export const PanelBoard = memo(function PanelBoard({ state, feature, onSelectFeature }: PanelBoardProps) {
   return (
     <section className="min-w-0 space-y-4" aria-label="Calculator panels" data-testid="panels">
       <FeatureBlock state={state} feature={feature} onSelect={onSelectFeature} />
@@ -26,4 +28,4 @@ export function PanelBoard({ state, feature, onSelectFeature }: PanelBoardProps)
       <HistoryBlock state={state} />
     </section>
   );
-}
+});
