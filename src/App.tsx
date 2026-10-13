@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { KeyId } from "./engine";
 import { Calculator, DEVICE_NAME } from "./ui/Calculator";
 import { HeaderSwitch } from "./ui/HeaderSwitch";
@@ -9,6 +9,7 @@ import { useCalcOnly } from "./ui/useCalcOnly";
 import { useCalculator } from "./ui/useCalculator";
 import { useKeyboard } from "./ui/useKeyboard";
 import { useKeyTips } from "./ui/useKeyTips";
+import { useScrollPastHeader } from "./ui/useScrollPastHeader";
 import { useTheme } from "./ui/useTheme";
 
 export function App() {
@@ -18,6 +19,8 @@ export function App() {
   const [calcOnly, setCalcOnly] = useCalcOnly();
   const [feature, setFeature] = useFeature(trigger);
   const [flash, setFlash] = useState<{ id: KeyId; n: number } | null>(null);
+  const header = useRef<HTMLElement>(null);
+  useScrollPastHeader(header);
 
   // Keys typed on the computer keyboard press the calculator key and animate it.
   const onKeyboard = useCallback(
@@ -50,7 +53,7 @@ export function App() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-2 px-4 pt-3 pb-1 sm:gap-3 sm:px-6">
+      <header ref={header} className="flex flex-wrap items-center justify-between gap-2 px-4 pt-3 pb-1 sm:gap-3 sm:px-6">
         <h1 className="min-w-0 text-sm font-semibold tracking-tight">{DEVICE_NAME} Online</h1>
         <div className="ml-auto flex flex-none items-center gap-2">
           <HeaderSwitch label="Key tips" on={tipsOn} onChange={setTipsOn} testId="key-tips-switch" />
