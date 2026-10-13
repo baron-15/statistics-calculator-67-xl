@@ -91,22 +91,31 @@ test("draws lit dots on the LCD canvas", async ({ page }) => {
   expect(lit).toBeGreaterThan(50);
 });
 
-test("no horizontal overflow at 360 px, and the device fills the width", async ({ page }) => {
+test("no horizontal overflow at 360 px", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 });
   await page.reload();
-  const { scroll, client, device } = await page.evaluate(() => ({
+  const { scroll, client } = await page.evaluate(() => ({
     scroll: document.documentElement.scrollWidth,
     client: document.documentElement.clientWidth,
-    device: document.querySelector("[data-testid=device]")!.getBoundingClientRect().width,
   }));
   expect(scroll).toBeLessThanOrEqual(client);
-  expect(device).toBeGreaterThan(330);
 });
 
-test("phone tap targets are at least 44 px tall", async ({ page, isMobile }) => {
-  test.skip(!isMobile, "phone layout only");
-  for (const id of ["2ND", "MODE", "7", "ENTER", "ON", "CLEAR"]) {
-    const box = (await key(page, id).boundingBox())!;
-    expect(box.height, id).toBeGreaterThanOrEqual(44);
+test("on a phone the whole device is on screen when the page opens", async ({ page }) => {
+  // A Pixel 7 and an iPhone 14 with their browser bars showing, and a small Android phone.
+  for (const [width, height] of [[412, 747], [390, 664], [360, 640]] as const) {
+    await page.setViewportSize({ width, height });
+    await page.reload();
+    const box = (await page.getByTestId("device").boundingBox())!;
+    expect(box.y + box.height, `${width}×${height}`).toBeLessThanOrEqual(height);
+  }
+  // On a very short screen it stops shrinking at 240 px wide (the page scrolls), and every key stays a
+  // 24 px target at least (WCAG 2.5.8).
+  await page.setViewportSize({ width: 375, height: 553 });
+  await page.reload();
+  expect((await page.getByTestId("device").boundingBox())!.width).toBeCloseTo(240, 0);
+  for (const button of await page.locator("[data-calc-key]").all()) {
+    const box = (await button.boundingBox())!;
+    expect(Math.min(box.width, box.height), (await button.getAttribute("data-calc-key")) ?? "").toBeGreaterThanOrEqual(24);
   }
 });

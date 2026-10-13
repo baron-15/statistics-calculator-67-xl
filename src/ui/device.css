@@ -11,10 +11,12 @@
   width: min(100%, max(320px, min(540px, calc((100dvh - 7.5rem) / 2.2063))));
   margin-inline: auto;
 }
-/* Phones: the full column width (the page scrolls). */
+/* Phones: the whole device on screen as the page opens. 6.5rem is the two-row header, the page's top padding
+ * and as much again below; svh is the viewport with the browser bars showing, so the device keeps its size
+ * when they slide away. At least 240 px wide, so keys stay tappable on very short screens. */
 @media (max-width: 640px) {
   .dv-shell {
-    width: min(100%, 480px);
+    width: min(100%, 480px, max(240px, calc((100svh - 6.5rem) / 2.2063)));
   }
 }
 
